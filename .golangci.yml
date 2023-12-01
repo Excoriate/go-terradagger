@@ -1,0 +1,39 @@
+---
+linters:
+    enable:
+        - bodyclose
+        - depguard
+        - dupl
+        - errcheck
+        - gocritic
+        - gofmt
+        - goconst
+        - goimports
+        - gosec
+        - gosimple
+        - revive
+        - govet
+        - ineffassign
+        - misspell
+        - nakedret
+        - prealloc
+        - staticcheck
+        - stylecheck
+        - typecheck
+        - unconvert
+        - unparam
+        - unused
+        - whitespace
+
+linters-settings:
+    errcheck:
+        check-blank: true
+        ignore: fmt:.*,[rR]ead|[wW]rite|[cC]lose,io:Copy
+    govet:
+        check-shadowing: true
+    gocyclo:
+        min-complexity: 15
+    maligned:
+        suggest-new: true
+    gofmt:
+        simplify: true

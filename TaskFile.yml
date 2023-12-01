@@ -1,0 +1,108 @@
+---
+version: '3'
+env:
+    ENV: '{{.ENV}}'
+
+vars:
+    MODULE: '{{default "default" .MODULE}}'
+    EXAMPLE: '{{default "basic" .RECIPE}}'
+    VARS: '{{default "" .VARS}}'
+
+dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragrunt']
+
+includes:
+    common:
+        taskfile: ./taskfiles/Taskfile.common.yml
+    hooks:
+        taskfile: ./taskfiles/Taskfile.precommit.yml
+    tf:
+        taskfile: ./taskfiles/Taskfile.terraform.yml
+
+tasks:
+    # ***********************
+    # Common tasks
+    # ***********************
+    default:
+        cmds:
+            - task: common:default
+
+    hooks-init:
+        desc: Initialize and install required hooks
+        cmds:
+            - task: hooks:hooks-init
+
+    hooks-run:
+        desc: Run all the hooks described in the .pre-commit-config.yaml file
+        cmds:
+            - task: hooks:hooks-run
+    # ***********************
+    # Terraform task (modules)
+    # (These tasks are used to run terraform commands in the module directory)
+    # ***********************
+    tf-module-init:
+        desc: Initialize the terraform module
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+
+    tf-module-ci:
+        desc: Run CI tasks for the terraform module
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:validate
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:fmt-fix
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:lint
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:docs
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:docs
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/basic'}
+
+    tf-module-plan:
+        desc: In the terraform module, execute a terraform plan
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}'}
+            - task: tf:plan
+              vars: {TF_WORKING_DIR: 'modules/{{.MODULE}}', TF_VARS_FILE: '{{.VARS}}'}
+    # ***********************
+    # Terraform task (examples/)
+    # (These tasks are used to run terraform commands in the example directory)
+    # ***********************
+    tf-example-init:
+        desc: Execute a terraform init in the 'example recipe' directory of the module
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/{{.EXAMPLE}}'}
+
+    tf-example-plan:
+        desc: Execute a terraform plan in the 'example recipe' directory of the module
+        cmds:
+            - task: common:clean
+            - task: tf:init
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/{{.EXAMPLE}}'}
+
+    tf-example-apply:
+        desc: Execute a terraform apply in the 'example recipe' directory of the module
+        deps:
+            - task: tf:plan
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/{{.EXAMPLE}}', TF_VARS_FILE: '{{.VARS}}'}
+        cmds:
+            - task: tf:apply
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/{{.EXAMPLE}}', TF_VARS_FILE: '{{.VARS}}'}
+
+    tf-example-destroy:
+        desc: Execute a terraform destroy in the 'example recipe' directory of the module
+        deps:
+            - task: tf:plan
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/{{.EXAMPLE}}', TF_VARS_FILE: '{{.VARS}}'}
+        cmds:
+            - task: tf:destroy
+              vars: {TF_WORKING_DIR: 'examples/{{.MODULE}}/{{.EXAMPLE}}', TF_VARS_FILE: '{{.VARS}}'}

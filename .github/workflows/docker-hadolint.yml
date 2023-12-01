@@ -1,0 +1,65 @@
+---
+name: Lint Docker
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    paths:
+      - '**.Dockerfile'
+      - '**.dockerfile'
+  pull_request:
+    paths:
+      - '**.Dockerfile'
+      - '**.dockerfile'
+env:
+  GO_VERSION: '~1.21'
+jobs:
+  docker-linter-hadolint:
+    name: Docker Linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: hadolint/hadolint-action@v3.1.0
+        name: Lint arm Dockerfile
+        id: hadolint-arm
+        with:
+          dockerfile: container/arm.Dockerfile
+      - uses: hadolint/hadolint-action@v3.1.0
+        name: Lint linux arm64 Dockerfile
+        id: hadolint-linux-arm64
+        with:
+          dockerfile: container/Dockerfile
+      - name: Update Pull Request Comment
+        uses: actions/github-script@v6
+        id: update-comment-hadolint
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            // Get outputs of the two scans
+            const hadolintArmResult = steps.hadolint-arm.outputs.result;
+            const hadolintLinuxArm64Result = steps.hadolint-linux-arm64.outputs.result;
+
+            // Combine two outputs into one markdown string
+            const output = `
+            #### Hadolint ARM Dockerfile: \`${hadolintArmResult}\`
+            \`\`\`
+            ${hadolintArmResult}
+            \`\`\`
+            #### Hadolint Linux ARM64 Dockerfile: \`${hadolintLinuxArm64Result}\`
+            \`\`\`
+            ${hadolintLinuxArm64Result}
+            \`\`\`
+            `;
+
+            // Post the comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })

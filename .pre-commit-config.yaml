@@ -1,0 +1,86 @@
+---
+repos:
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.33.0
+      hooks:
+          - id: yamllint
+
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.2.3
+      hooks:
+          - id: yamlfmt
+
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+          - id: trailing-whitespace
+          - id: check-added-large-files
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: check-shebang-scripts-are-executable
+          - id: check-symlinks
+          - id: check-toml
+          - id: check-yaml
+          - id: check-json
+          - id: detect-private-key
+          - id: end-of-file-fixer
+          - id: pretty-format-json
+            args: [--autofix]
+
+    - repo: https://github.com/jumanjihouse/pre-commit-hooks
+      rev: 3.0.0
+      hooks:
+          - id: git-check # Configure in .gitattributes
+          - id: git-dirty # Configure in .gitignore
+          - id: script-must-have-extension
+
+
+    - repo: https://github.com/gruntwork-io/pre-commit
+      rev: v0.1.23
+      hooks:
+          - id: shellcheck
+
+    - repo: https://github.com/mineiros-io/pre-commit-hooks
+      rev: v0.5.0
+      hooks:
+          - id: terraform-fmt
+            files: ^modules/.*\.tf$
+          - id: terraform-validate
+            files: ^modules/.*\.tf$
+            exclude: ^examples|.terraform/|tests/.*\.tf$
+
+    - repo: https://github.com/dnephin/pre-commit-golang
+      rev: v0.5.1
+      hooks:
+          - id: go-fmt
+            files: ^tests/(.*\/)*.*\.go$
+          - id: go-mod-tidy
+            files: ^tests/(.*\/)*.*\.go$
+
+
+    - repo: https://github.com/igorshubovych/markdownlint-cli
+      rev: v0.37.0
+      hooks:
+          - id: markdownlint
+            args: [--fix]
+
+    - repo: https://github.com/antonbabenko/pre-commit-terraform
+      rev: v1.83.5
+      hooks:
+          - id: terraform_tflint
+            files: ^modules/.*\.tf$
+            args:
+                - --args=--config=.tflint.hcl
+
+    - repo: https://github.com/terraform-docs/terraform-docs
+      rev: v0.16.0
+      hooks:
+          - id: terraform-docs-go
+            files: ^modules/.*/.*\.tf$
+            entry: sh -c 'for d in modules/*; do [ -d "$d" ] && terraform-docs markdown --config "$d/.terraform-docs.yml" --output-file "$d/README.md" --output-mode
+                inject . || echo "Skipping $d, no .terraform-docs.yml found"; done'
+            language: system
+          - id: terraform-docs-go
+            entry: sh -c 'for d in examples/*/*; do if [ -d "$d" ] && [ -f "$d/.terraform-docs.yml" ]; then (cd "$d" && terraform-docs .); fi; done'
+            language: system
+            files: ^examples/.*/.*/.*\.tf$
