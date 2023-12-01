@@ -51,7 +51,6 @@ That means that you should add or update a test case, run all tests and verify
 that the new test fails with a clear error message and then start implementing
 the code changes to get that test to pass.
 
-All the tests are located in the `tests` folder in every repository, and all of them are made using [Terratest](https://terratest.gruntwork.io/)
 
 ## Update the code
 
