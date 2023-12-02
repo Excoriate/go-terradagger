@@ -65,3 +65,50 @@ jobs:
               run: |
                   cd ${{ env.TF_ROOT }}/${{ matrix.module }}
                   terraform validate
+
+            - name: Validate Terraform docs file
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  if [ -f .terraform-docs.yml ]; then
+                    echo "terraform-docs configuration file found"
+                    cat .terraform-docs.yml
+                  else
+                    echo "Error: .terraform-docs.yml file not found"
+                    exit 1
+                  fi
+
+            - name: Validate TFLint file
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  if [ -f .tflint.hcl ]; then
+                    echo "TFLint configuration file found"
+                    cat .tflint.hcl
+                  else
+                    echo "Error: .tflint.hcl file not found"
+                    exit 1
+                  fi
+
+            - name: Check for README.md file
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  if [ -f README.md ]; then
+                    echo "README.md file found"
+                  else
+                    echo "Error: README.md file not found"
+                    exit 1
+                  fi
+
+            - name: Terraform TFLintSetup
+              id: terraform-tflint-setup
+              uses: terraform-linters/setup-tflint@v1
+              with:
+                  tflint_version: latest
+
+            - name: TFLint Run
+              id: terraform-tflint-run
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  tflint --version
+                  tflint --init
+                  tflint --disable-rule=terraform_module_pinned_source
+                  tflint .

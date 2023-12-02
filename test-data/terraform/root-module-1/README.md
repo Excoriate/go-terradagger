@@ -10,10 +10,6 @@ Provide all the description that's required.
 
 ---
 
-## Example
-
-Examples of this module's usage are available in the [examples](./examples) folder.
-
 ```hcl
 resource "random_id" "this" {
   byte_length = 8

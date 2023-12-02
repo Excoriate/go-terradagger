@@ -2,7 +2,8 @@
   "aliveStatusCodes": [
     200,
     206,
-    999
+    999,
+    400
   ],
   "fallbackRetryDelay": "30s",
   "ignorePatterns": [
