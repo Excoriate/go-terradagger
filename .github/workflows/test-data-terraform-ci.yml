@@ -2,66 +2,66 @@
 name: Test Data (Terraform CI)
 
 on:
-  push:
-  workflow_dispatch:
-  pull_request:
-    types: [opened, edited, synchronize]
+    push:
+    workflow_dispatch:
+    pull_request:
+        types: [opened, edited, synchronize]
 
 env:
-  TF_ROOT: 'test-data/terraform'
+    TF_ROOT: test-data/terraform
 
 jobs:
-  set_up_job:
-    runs-on: ubuntu-latest
+    set_up_job:
+        runs-on: ubuntu-latest
 
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+        outputs:
+            matrix: ${{ steps.set-matrix.outputs.matrix }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Set matrix
-        id: set-matrix
-        run: |
-          MODULES_DIR="${{ env.TF_ROOT }}/*"
-          MODULES=$(find $MODULES_DIR -maxdepth 1 -type d | sed "s|${{ env.TF_ROOT }}/||") # Exclude base TF_ROOT from list
-          DIRS_ARRAY=()
+            - name: Set matrix
+              id: set-matrix
+              run: |
+                  MODULES_DIR="${{ env.TF_ROOT }}/*"
+                  MODULES=$(find $MODULES_DIR -maxdepth 1 -type d | sed "s|${{ env.TF_ROOT }}/||") # Exclude base TF_ROOT from list
+                  DIRS_ARRAY=()
 
-          for module in $MODULES
-          do
-            # Exclude certain directories as needed.
-            if [[ "$module" != "_env" ]]; then
-              DIRS_ARRAY+=("$module")
-            fi
-          done
-          MODULES_JSON=$(echo "${DIRS_ARRAY[@]}" | jq -R -s -c 'split(" ")')
-          echo "::set-output name=matrix::${MODULES_JSON}"
+                  for module in $MODULES
+                  do
+                    # Exclude certain directories as needed.
+                    if [[ "$module" != "_env" ]]; then
+                      DIRS_ARRAY+=("$module")
+                    fi
+                  done
+                  MODULES_JSON=$(echo "${DIRS_ARRAY[@]}" | jq -R -s -c 'split(" ")')
+                  echo "::set-output name=matrix::${MODULES_JSON}"
 
-  ci:
-    needs: set_up_job
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        module: ${{fromJson(needs.set_up_job.outputs.matrix)}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    ci:
+        needs: set_up_job
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                module: ${{fromJson(needs.set_up_job.outputs.matrix)}}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init
-        run: |
-          cd ${{ env.TF_ROOT }}/${{ matrix.module }}
-          terraform init
+            - name: Terraform Init
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  terraform init
 
-      - name: Terraform Fmt
-        run: |
-          cd ${{ env.TF_ROOT }}/${{ matrix.module }}
-          terraform fmt -check -recursive
+            - name: Terraform Fmt
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  terraform fmt -check -recursive
 
-      - name: Terraform Validate
-        run: |
-          cd ${{ env.TF_ROOT }}/${{ matrix.module }}
-          terraform validate
+            - name: Terraform Validate
+              run: |
+                  cd ${{ env.TF_ROOT }}/${{ matrix.module }}
+                  terraform validate
