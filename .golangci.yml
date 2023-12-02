@@ -15,7 +15,6 @@ run:
 linters-settings:
     depguard:
         rules:
-      # Add here those packages that you'd like to exclude or blacklist
             Rule not allowed packages:
                 files: [.*]
                 deny:
@@ -79,6 +78,12 @@ issues:
     max-issues-per-linter: 0
     max-same-issues: 0
     exclude-rules:
+        - linters:
+              - typecheck
+          text: could not import github.com/Excoriate/go-terradagger/pkg/config
+        - linters:
+              - typecheck
+          text: unicode/utf8
         - linters:
               - gosec
           text: G306

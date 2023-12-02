@@ -5,8 +5,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	// "github.com/moby/moby/pkg/namesgenerator"
-
 	"github.com/docker/docker/pkg/namesgenerator"
 )
 

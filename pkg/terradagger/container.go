@@ -2,6 +2,7 @@ package terradagger
 
 import (
 	"fmt"
+
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/errors"
@@ -65,7 +66,6 @@ func (c *Container) create(options *NewContainerOptions) (*dagger.Container, err
 
 func (c *Container) withDirs(container *dagger.Container, mountDir *dagger.Directory,
 	workDirPath string, excludeDirsExtra []string) *dagger.Container {
-
 	container = container.WithDirectory(config.MountPathPrefixInDagger, mountDir,
 		dagger.ContainerWithDirectoryOpts{
 			Exclude: utils.MisSlices(config.ExcludedDirsDefault, config.ExcludedDirsTerraform, excludeDirsExtra),

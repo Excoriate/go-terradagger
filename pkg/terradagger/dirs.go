@@ -2,10 +2,11 @@ package terradagger
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/errors"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
-	"path/filepath"
 
 	"dagger.io/dagger"
 )
@@ -35,10 +36,10 @@ func getDirs(client *dagger.Client, mountDir, workDir string) *DirConfig {
 func resolveMountDirPath(mountDirPath string) (string, error) {
 	currentDir := utils.GetCurrentDir()
 	if mountDirPath == "" {
-		return filepath.Join(currentDir, "/", "."), nil
+		return filepath.Join(currentDir, "."), nil
 	}
 
-	mountDirPath = filepath.Join(currentDir, "/", mountDirPath)
+	mountDirPath = filepath.Join(currentDir, mountDirPath)
 
 	if err := utils.IsValidDir(mountDirPath); err != nil {
 		return "", &errors.ErrTerraDaggerInvalidMountPath{
