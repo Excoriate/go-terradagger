@@ -18,6 +18,12 @@
 
 ## Installation 🛠️
 
+Install it using [Go get](https://golang.org/cmd/go/#hdr-Add_dependencies_to_current_module_and_install_them):
+
+```bash
+go get github.com/Excoriate/go-terradagger
+```
+
 ### Pre-requisites 📋
 
 - [Go](https://golang.org/doc/install) >= 1.18
@@ -29,10 +35,9 @@
 
 ---
 
-### Using TerraDagger as a GO library 📚
+### Getting Started 🚀
 
 ```bash
-go get github.com/Excoriate/terradagger
 ```
 
 
