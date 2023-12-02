@@ -1,21 +1,15 @@
 # Default variables
 ENV ?= dev
-MODULE ?= default
-EXAMPLE ?= basic
-
 
 # Root directories for different Terraform components
-MODULE_ROOT_DIR ?= modules
-EXAMPLE_ROOT_DIR ?= examples
-VARS_FILE_ROOT_DIR ?= config
-
-# Default vars file
+MODULE ?= root-module-1
 VARS ?= fixtures.tfvars
+TERRAFORM_TESTS_MODULES_DIR ?= tests/terraform
+
+# Tools, and scripts.
+SCRIPTS_FOLDER ?= scripts
 
 .PHONY: default clean prune check-workdir tf-init
-
-default:
-	@echo "Available make targets ..."
 
 clean:
 	@echo "Cleaning directories..."
@@ -53,31 +47,16 @@ clean:
 prune: clean
 	@git clean -f -xd --exclude-list
 
-TF_WORKING_DIR_MODULES = $(MODULE_ROOT_DIR)/$(MODULE) # modules/default
-TF_WORKING_DIR_EXAMPLES = $(EXAMPLE_ROOT_DIR)/$(MODULE)/$(EXAMPLE) # examples/default/basic
-WORKDIR =
-TF_VARS_FILE = $(VARS_FILE_ROOT_DIR)/$(VARS) # config/fixtures.tfvars
-
-check-workdir:
-	@if [ ! -d "$(WORKDIR)" ]; then \
-		echo "Module directory does not exist: $(WORKDIR)"; \
-		echo "Full path: $(shell pwd)/$(WORKDIR)"; \
-		exit 1; \
-	fi
-	@if [ -z "$(shell find $(WORKDIR) -mindepth 1 -name '*.tf' -print -quit)" ]; then \
-		echo "No Terraform files found in the module directory $(WORKDIR)"; \
-		exit 1; \
-	fi
 #####################
 # Common targets #
 #####################
-hooks-init:
+pc-init:
 	@pre-commit install --hook-type pre-commit
 	@pre-commit install --hook-type pre-push
 	@pre-commit install --hook-type commit-msg
 	@pre-commit autoupdate
 
-hooks-run:
+pc-run:
 	@pre-commit run --show-diff-on-failure \
 		--all-files \
 		--color always

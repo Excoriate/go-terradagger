@@ -5,7 +5,7 @@
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Test binary, built with `go tests -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
@@ -39,3 +39,6 @@
 .terraform/
 .DS_Store
 *.zip
+
+# Ignore TerraDagger specific files.
+terradagger-cli

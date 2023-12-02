@@ -1,39 +1,105 @@
 ---
-linters:
-    enable:
-        - bodyclose
-        - depguard
-        - dupl
-        - errcheck
-        - gocritic
-        - gofmt
-        - goconst
-        - goimports
-        - gosec
-        - gosimple
-        - revive
-        - govet
-        - ineffassign
-        - misspell
-        - nakedret
-        - prealloc
-        - staticcheck
-        - stylecheck
-        - typecheck
-        - unconvert
-        - unparam
-        - unused
-        - whitespace
-
+run:
+    tests: false
+    timeout: 240s
+    skip-dirs-use-default: true
+    skip-dirs:
+        - ^vendor$
+        - ^go/pkg/mod/*
+        - ../../../../go/pkg/mod/*
+        - ../../../../.gobrew/*
+        - .*_test\.go$
+    skip-files:
+        - .*\.pb\.go
+        - .*_generated\.go
 linters-settings:
-    errcheck:
-        check-blank: true
-        ignore: fmt:.*,[rR]ead|[wW]rite|[cC]lose,io:Copy
+    depguard:
+        rules:
+      # Add here those packages that you'd like to exclude or blacklist
+            Rule not allowed packages:
+                files: [.*]
+                deny:
+                    - pkg: notexist
+                      desc: notexist is not allowed or blacklisted
     govet:
         check-shadowing: true
     gocyclo:
         min-complexity: 15
     maligned:
         suggest-new: true
-    gofmt:
-        simplify: true
+    dupl:
+        threshold: 100
+    goconst:
+        min-len: 5
+        min-occurrences: 3
+    gocritic:
+        settings:
+            rangeValCopy:
+                sizeThreshold: 1024
+        enabled-tags:
+            - diagnostic
+            - experimental
+            - opinionated
+            - performance
+            - style
+        disabled-checks:
+            - singleCaseSwitch
+            - hugeParam
+            - appendCombine
+            - commentedOutCode
+    funlen:
+        lines: 100
+        statements: 52
+linters:
+    disable-all: true
+    enable:
+        - bodyclose
+        - unused
+        - dogsled
+        - dupl
+        - errcheck
+        - funlen
+        - goconst
+        - gocritic
+        - gofmt
+        - gosec
+        - gosimple
+        - nakedret
+        - exportloopref
+        - staticcheck
+        - stylecheck
+        - typecheck
+        - unconvert
+        - unparam
+        - whitespace
+        - govet
+        - revive
+        - depguard
+issues:
+    max-issues-per-linter: 0
+    max-same-issues: 0
+    exclude-rules:
+        - linters:
+              - gosec
+          text: G306
+    # This is just a warning, not an error, and it's safe for the
+    # due to the 'root' command is adding a bunch of flags, and options
+    # but none of those or the length of the function is a problem, nor
+    # a cognitive-complexity issue. See the function: addPersistentFlagsToRootCMD()
+        - linters:
+              - funlen
+          path: cmd/root\.go
+        - linters:
+              - gosec
+          text: G404
+    # This is just a warning, not an error, and it's safe for the
+    # function RunCommand to run commands with a variable number of arguments
+    # since most of the time, it should be used by known commands.
+    # See: https://github.com/Excoriate/gitbuster/blob/
+    # main/pkg/utils/commands.go#L28-L28
+        - path: utils/commands\.go
+          linters:
+              - gosec
+          text: G204
+output:
+    format: line-number
