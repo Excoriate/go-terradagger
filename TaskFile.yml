@@ -6,8 +6,8 @@ env:
 vars:
     MODULE: '{{default "root-module-1" .MODULE}}'
     VARS: '{{default "" .VARS}}'
-    BINARY: '{{default "terradagger-cli" .BINARY}}'
-    TERRAFORM_TESTS_MODULES_DIR: '{{default "tests/terraform" .TERRAFORM_TESTS_MODULES_DIR}}'
+    BINARY: '{{default "cli" .BINARY}}'
+    TERRAFORM_TESTS_MODULES_DIR: '{{default "test-data/terraform" .TERRAFORM_TESTS_MODULES_DIR}}'
 
 dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragrunt']
 
@@ -59,10 +59,10 @@ tasks:
         desc: Code style -> fmt,vet,lint
         deps: [go-fmt, go-vet, go-lint]
     go-test:
-        desc: Run unit tests
+        desc: Run unit test-data
         cmds:
-            - echo "===========> Run unit tests"
-            - go tests -race -v ./...
+            - echo "===========> Run unit test-data"
+            - go test-data -race -v ./...
     cli-build:
         desc: Build the terradagger CLi
         dir: ./cli
@@ -85,11 +85,11 @@ tasks:
         cmds:
             - go run ./main.go {{.CLI_ARGS}}
     go-ci:
-        desc: Run all the tests and code checks
+        desc: Run all the test-data and code checks
         cmds:
             - task: go-style
             - task: go-tidy
-            - task: go-tests
+            - task: go-test-data
             - task: go-build
 
     # ***********************
@@ -131,7 +131,7 @@ tasks:
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}/{{.MODULE}}', TF_VARS_FILE: '{{.VARS}}'}
 
     tf-ci:
-        desc: Run CI tasks for the terraform modules as part of the 'tests' directory
+        desc: Run CI tasks for the terraform modules as part of the 'test-data' directory
         cmds:
             - task: common:clean
             - task: tf:init

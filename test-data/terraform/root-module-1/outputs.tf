@@ -25,7 +25,7 @@ output "random_id" {
 
 output "random_password" {
   value       = random_password.this
-  sensitive = true
+  sensitive   = true
   description = "The random pet generated."
 }
 

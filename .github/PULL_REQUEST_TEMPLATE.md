@@ -20,4 +20,3 @@ Example:
 Link any supporting context or documentation:
 * 🔗 Github issues, documentation, helpful links.
 * ✅ Use `closes #123`, if this PR closes a GitHub issue `#123`
-

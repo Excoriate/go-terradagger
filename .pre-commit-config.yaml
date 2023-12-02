@@ -44,19 +44,17 @@ repos:
       rev: v0.5.0
       hooks:
           - id: terraform-fmt
-            files: ^modules/.*\.tf$
+            files: ^test-data/terraform/.+\.tf$
           - id: terraform-validate
-            files: ^modules/.*\.tf$
-            exclude: ^examples|.terraform/|tests/.*\.tf$
+            files: ^test-data/terraform/.+\.tf$
 
     - repo: https://github.com/dnephin/pre-commit-golang
       rev: v0.5.1
       hooks:
           - id: go-fmt
-            files: ^tests/(.*\/)*.*\.go$
+            files: ^(pkg|cli)/(.*/)*.*\.go$
           - id: go-mod-tidy
-            files: ^tests/(.*\/)*.*\.go$
-
+            files: ^(pkg|cli)/(.*/)*.*\.go$
 
     - repo: https://github.com/igorshubovych/markdownlint-cli
       rev: v0.37.0
@@ -68,7 +66,7 @@ repos:
       rev: v1.83.6
       hooks:
           - id: terraform_tflint
-            files: ^modules/.*\.tf$
+            files: ^test-data/terraform/.+\.tf$
             args:
                 - --args=--config=.tflint.hcl
 
@@ -76,11 +74,20 @@ repos:
       rev: v0.16.0
       hooks:
           - id: terraform-docs-go
-            files: ^modules/.*/.*\.tf$
+            files: ^test-data/terraform/.+\.tf$
             entry: sh -c 'for d in modules/*; do [ -d "$d" ] && terraform-docs markdown --config "$d/.terraform-docs.yml" --output-file "$d/README.md" --output-mode
                 inject . || echo "Skipping $d, no .terraform-docs.yml found"; done'
             language: system
-          - id: terraform-docs-go
-            entry: sh -c 'for d in examples/*/*; do if [ -d "$d" ] && [ -f "$d/.terraform-docs.yml" ]; then (cd "$d" && terraform-docs .); fi; done'
-            language: system
-            files: ^examples/.*/.*/.*\.tf$
+
+#    - repo: https://github.com/hadolint/hadolint
+#      rev: v2.12.1-beta
+#      hooks:
+#          - id: hadolint-docker
+
+    - repo: https://github.com/dnephin/pre-commit-golang
+      rev: v0.5.1
+      hooks:
+          - id: go-fmt
+          - id: go-vet
+          - id: go-build
+          - id: go-mod-tidy

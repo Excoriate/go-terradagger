@@ -1,5 +1,5 @@
 ---
-name: Go Build
+name: Go Build TerraDagger CLI
 on:
     workflow_dispatch:
     push:
@@ -47,4 +47,4 @@ jobs:
                   go-version: ${{ matrix.go-versions }}
             - name: Build for ${{ matrix.go-versions }}
               run: |
-                  go build -o bin/cli
+                  go build -o bin/go-terradagger

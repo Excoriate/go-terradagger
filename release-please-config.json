@@ -65,7 +65,7 @@
         "README.md"
       ],
       "prerelease": false,
-      "release-type": "terraform"
+      "release-type": "go"
     }
   }
 }

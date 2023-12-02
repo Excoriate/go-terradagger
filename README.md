@@ -41,6 +41,7 @@ go get github.com/Excoriate/terradagger
 - [ ] Add support for [Terragrunt](https://terragrunt.gruntwork.io/).
 - [ ] Add support for [Terratest](https://terratest.gruntwork.io/).
 - [ ] Mature a CLI 🤖 as a wrapper (and non-programmatic) way to use TerraDagger.
+- [ ] Add official Docker images for TerraDagger.
 
 >**Note**: This is still work in progress, however, I'll be happy to receive any feedback or contribution. Ensure you've read the [contributing guide](./CONTRIBUTING.md) before doing so.
 
