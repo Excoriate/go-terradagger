@@ -3,18 +3,19 @@ package terradagger
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 	"github.com/Excoriate/go-terradagger/pkg/env"
 	"github.com/Excoriate/go-terradagger/pkg/errors"
 	"github.com/Excoriate/go-terradagger/pkg/o11y"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
-	"io"
-	"os"
 
 	"dagger.io/dagger"
 )
 
-type go-terradaggerent struct {
+type Client struct {
 	// Implementation details, and internals.
 	Logger      o11y.LoggerInterface
 	ID          string
