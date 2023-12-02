@@ -33,7 +33,7 @@ described in the [GitHub Flow].
 If the repository you're working on ships with a
 [`.pre-commit-config.yaml`][pre-commit-file],
 make sure the necessary hooks have been installed before you begin working
-(e.g. a `pre-commit install`). Also, there's a `script` included in this repository that might help you with that. See [here](DevEx/scripts/hooks/install-pre-commit-hooks-deps.sh).
+(e.g. a `pre-commit install`).
 
 ## Update the documentation
 

@@ -1,5 +1,5 @@
 ---
-name: Go tests pkg
+name: Go Tests Library
 on:
     workflow_dispatch:
     push:
