@@ -76,7 +76,9 @@ repos:
       rev: v3.11.2
       hooks:
           - id: markdown-link-check
-            args: [-q]
+            args:
+                - q
+                - --config-file=.markdown-link-check.json
 
     - repo: https://github.com/terraform-docs/terraform-docs
       rev: v0.16.0
@@ -86,4 +88,3 @@ repos:
             entry: sh -c 'for d in modules/*; do [ -d "$d" ] && terraform-docs markdown --config "$d/.terraform-docs.yml" --output-file "$d/README.md" --output-mode
                 inject . || echo "Skipping $d, no .terraform-docs.yml found"; done'
             language: system
-
