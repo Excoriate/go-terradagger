@@ -5,8 +5,8 @@ env:
 
 vars:
     MODULE: '{{default "root-module-1" .MODULE}}'
-    VARS: '{{default "fixtures.tfvars" .VARS}}'
-    TERRADAGGER_CLI_NAME: '{{default "terradagger-cli" .TERRADAGGER_CLI_NAME}}'
+    VARS: '{{default "" .VARS}}'
+    BINARY: '{{default "terradagger-cli" .BINARY}}'
     TERRAFORM_TESTS_MODULES_DIR: '{{default "tests/terraform" .TERRAFORM_TESTS_MODULES_DIR}}'
 
 dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragrunt']
@@ -69,16 +69,16 @@ tasks:
         sources:
             - ./main.go
         generates:
-            - ./{{.TERRADAGGER_CLI_NAME}}
+            - ./{{.BINARY}}
         cmds:
-            - if [ -f ./{{.TERRADAGGER_CLI_NAME}} ]; then rm ./{{.TERRADAGGER_CLI_NAME}}; fi
-            - go build -o {{.TERRADAGGER_CLI_NAME}} ./main.go
+            - if [ -f ./{{.BINARY}} ]; then rm ./{{.BINARY}}; fi
+            - go build -o {{.BINARY}} ./main.go
     cli-run:
         desc: Run the terradagger CLi
         dir: ./cli
         deps: [cli-build]
         cmds:
-            - ./{{.TERRADAGGER_CLI_NAME}} {{.CLI_ARGS}}
+            - ./{{.BINARY}} {{.CLI_ARGS}}
     cli-run-src:
         desc: Run the terradagger CLi from source
         dir: ./cli
@@ -142,5 +142,12 @@ tasks:
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}/{{.MODULE}}'}
             - task: tf:lint
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}/{{.MODULE}}'}
+            - task: tf:docs
+              vars: {TF_WORKING_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}/{{.MODULE}}'}
+
+    tf-docs:
+        desc: Generate terraform docs
+        cmds:
+            - task: common:clean
             - task: tf:docs
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}/{{.MODULE}}'}

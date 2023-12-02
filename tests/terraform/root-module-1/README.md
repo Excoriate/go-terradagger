@@ -15,18 +15,22 @@ Provide all the description that's required.
 Examples of this module's usage are available in the [examples](./examples) folder.
 
 ```hcl
-module "main_module" {
-  source     = "../../../modules/default"
-  is_enabled = var.is_enabled
-  aws_region = var.aws_region
+resource "random_id" "this" {
+  byte_length = 8
 }
-```
 
-Simple recipe:
+resource "random_password" "this" {
+  length  = 16
+  special = false
+}
 
-```hcl
-aws_region = "us-east-1"
-is_enabled = true
+resource "random_string" "this" {
+  length  = 16
+  special = false
+}
+
+resource "random_uuid" "this" {
+}
 ```
 
 ---
@@ -37,7 +41,9 @@ is_enabled = true
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_random"></a> [random](#provider\_random) | 3.5.1 |
 
 ## Modules
 
@@ -45,14 +51,19 @@ No modules.
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [random_id.this](https://registry.terraform.io/providers/hashicorp/random/3.5.1/docs/resources/id) | resource |
+| [random_password.this](https://registry.terraform.io/providers/hashicorp/random/3.5.1/docs/resources/password) | resource |
+| [random_string.this](https://registry.terraform.io/providers/hashicorp/random/3.5.1/docs/resources/string) | resource |
+| [random_uuid.this](https://registry.terraform.io/providers/hashicorp/random/3.5.1/docs/resources/uuid) | resource |
 
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.25.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | 3.5.1 |
 
 ## Inputs
 
@@ -69,6 +80,9 @@ No resources.
 |------|-------------|
 | <a name="output_aws_region_for_deploy_this"></a> [aws\_region\_for\_deploy\_this](#output\_aws\_region\_for\_deploy\_this) | The AWS region where the module is deployed. |
 | <a name="output_is_enabled"></a> [is\_enabled](#output\_is\_enabled) | Whether the module is enabled or not. |
-| <a name="output_module_config"></a> [module\_config](#output\_module\_config) | The module configuration. |
+| <a name="output_random_id"></a> [random\_id](#output\_random\_id) | The random id generated. |
+| <a name="output_random_password"></a> [random\_password](#output\_random\_password) | The random pet generated. |
+| <a name="output_random_string"></a> [random\_string](#output\_random\_string) | The random string generated. |
+| <a name="output_random_uuid"></a> [random\_uuid](#output\_random\_uuid) | The random uuid generated. |
 | <a name="output_tags_set"></a> [tags\_set](#output\_tags\_set) | The tags set for the module. |
 <!-- END_TF_DOCS -->

@@ -3,11 +3,15 @@ ENV ?= dev
 
 # Root directories for different Terraform components
 MODULE ?= root-module-1
-VARS ?= fixtures.tfvars
+VARS ?= ""
 TERRAFORM_TESTS_MODULES_DIR ?= tests/terraform
 
 # Tools, and scripts.
 SCRIPTS_FOLDER ?= scripts
+GO=go
+GO_BUILD_SCRIPT := $(shell pwd)/scripts/golang/go_build.sh
+TERRADAGGER_CLI_SRC_DIR := $(shell pwd)/cli
+TERRADAGGER_CLI_NAME := terradagger-cli
 
 .PHONY: default clean prune check-workdir tf-init
 
@@ -64,36 +68,94 @@ pc-run:
 #####################
 # Terraform targets #
 #####################
-tf-init: clean check-workdir
-	@cd $(WORKDIR) && terraform init
+tf-init: clean
+	@cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform init
 
-tf-validate: check-workdir clean tf-init
-	@cd $(WORKDIR) && terraform validate
+tf-validate: clean tf-init
+	@cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform validate
 
-tf-fmt-check: check-workdir clean
-	@cd $(WORKDIR) && terraform fmt -check=true -diff=true -write=false
+tf-fmt-check: clean
+	@cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform fmt -check=true -diff=true -write=false
 
-tf-fmt: check-workdir clean
-	@cd $(WORKDIR) && terraform fmt -check=false -diff=true -write=true
+tf-fmt: clean
+	@cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform fmt -check=false -diff=true -write=true
 
-tf-docs: check-workdir clean
-	@cd $(WORKDIR) && terraform-docs -c .terraform-docs.yml md . > README.md
+tf-docs: clean
+	@cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform-docs -c .terraform-docs.yml md . > README.md
 
-tf-lint: check-workdir clean tf-init
-	@cd $(WORKDIR) && tflint -v && tflint --init && tflint
+tf-lint: clean tf-init
+	@cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && tflint -v && tflint --init && tflint
 
-tf-plan: check-workdir clean tf-init
-	@cd $(WORKDIR) && terraform plan -var-file=$(TF_VARS_FILE)
+tf-plan: clean tf-init
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform plan with vars."; \
+		cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform plan; \
+	else \
+		cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform plan -var-file=$(VARS); \
+	fi
 
-tf-apply: check-workdir clean tf-plan
-	@cd $(WORKDIR) && terraform apply -var-file=$(TF_VARS_FILE)
+tf-apply: clean tf-plan
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform apply with vars."; \
+		cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform apply -auto-approve; \
+	else \
+		cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform apply -auto-approve -var-file=$(VARS); \
+	fi
 
-tf-destroy: check-workdir clean tf-init
-	@cd $(WORKDIR) && terraform destroy -var-file=$(TF_VARS_FILE)
+tf-destroy: clean tf-init
+	@if [ -z "$(VARS)" ]; then \
+		echo "No vars file provided, skipping terraform destroy with vars."; \
+		cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform destroy -auto-approve; \
+	else \
+		cd $(TERRAFORM_TESTS_MODULES_DIR)/$(MODULE) && terraform destroy -auto-approve -var-file=$(VARS); \
+	fi
 
 #####################
-# Terraform module targets #
+# Go targets #
 #####################
-tf-module-init: check-workdir clean tf-init
-tf-module-ci: check-workdir clean tf-init tf-validate tf-fmt-check tf-lint tf-docs
-tf-example-ci: check-workdir clean tf-init tf-validate tf-fmt-check tf-lint tf-docs
+## tidy: tidy go.mod
+.PHONY: go-tidy
+go-tidy:
+	@$(GO) mod tidy
+
+## fmt: Run go fmt against code.
+.PHONY: go-fmt
+go-fmt:
+	@$(GO) fmt -x ./...
+
+## vet: Run go vet against code.
+.PHONY: go-vet
+go-vet:
+	@$(GO) vet ./...
+
+## lint: Run go lint against code.
+.PHONY: go-lint
+go-lint:
+	@golangci-lint run -v --config .golangci.yml
+
+## style: Code style -> fmt,vet,lint
+.PHONY: go-style
+go-style: go-fmt go-vet go-lint
+
+## test: Run unit test
+.PHONY: go-test
+go-test:
+	@echo "===========> Run unit test"
+	@$(GO) test -race -v ./...
+
+## Build Go Binary
+.PHONY: go-build
+cli-build:
+	@echo "===========> Building binary"
+	@cd $(TERRADAGGER_CLI_SRC_DIR) &&  $(GO_BUILD_SCRIPT) --binary $(TERRADAGGER_CLI_NAME) --path ./main.go
+
+## Run Go source code
+.PHONY: go-run
+cli-run:
+	@echo "===========> Running binary of the terradagger-cli"
+	@cd $(TERRADAGGER_CLI_SRC_DIR) && ./$(TERRADAGGER_CLI_NAME) $(ARGS)
+
+.PHONY: go-run
+cli-run-src:
+	@echo "===========> Running source code"
+	@$(GO) run $(TERRADAGGER_CLI_SRC_DIR)/main.go $(ARGS)

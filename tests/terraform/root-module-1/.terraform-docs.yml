@@ -16,12 +16,7 @@ content: |-
       Examples of this module's usage are available in the [examples](./examples) folder.
 
       ```hcl
-      {{ include "../../examples/default/basic/main.tf" }}
-      ```
-
-      Simple recipe:
-      ```hcl
-      {{ include "../../examples/default/basic/config/fixtures.tfvars" }}
+      {{ include "./main.tf" }}
       ```
 
       ---

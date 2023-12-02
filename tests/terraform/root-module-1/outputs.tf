@@ -1,5 +1,5 @@
 output "is_enabled" {
-  value       = var.is_enabled
+  value       = local.is_enabled
   description = "Whether the module is enabled or not."
 }
 
@@ -25,6 +25,7 @@ output "random_id" {
 
 output "random_password" {
   value       = random_password.this
+  sensitive = true
   description = "The random pet generated."
 }
 

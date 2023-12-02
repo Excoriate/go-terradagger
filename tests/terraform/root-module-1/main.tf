@@ -3,12 +3,12 @@ resource "random_id" "this" {
 }
 
 resource "random_password" "this" {
-  length = 16
+  length  = 16
   special = false
 }
 
 resource "random_string" "this" {
-  length = 16
+  length  = 16
   special = false
 }
 

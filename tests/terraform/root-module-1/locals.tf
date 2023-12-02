@@ -8,13 +8,4 @@ locals {
   /*
     * SSM parameter store normalisation process.
   */
-  parameters_cfg_normalized = !local.is_enabled ? [] : [
-    for cfg in var.module_config : {
-      id = trimspace(lower(cfg.name))
-    }
-  ]
-
-  parameters_cfg_create = !local.is_enabled ? {} : {
-    for cfg in local.parameters_cfg_normalized : cfg["id"] => cfg
-  }
 }
