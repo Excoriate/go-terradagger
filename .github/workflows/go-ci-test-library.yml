@@ -1,5 +1,5 @@
 ---
-name: Go unit test-data
+name: Go tests pkg
 on:
     workflow_dispatch:
     push:
@@ -17,4 +17,4 @@ jobs:
               with:
                   go-version: ${{ env.GO_VERSION }}
             - name: Test
-              run: make go-test-data
+              run: go test -v ./...
