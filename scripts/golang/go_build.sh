@@ -72,7 +72,8 @@ build_binary() {
 # Add binary to .gitignore at the root of the git repository
 add_to_gitignore_if_not_exist() {
   local BINARY_NAME="$1"
-  local CURRENT_DIR="$(pwd)"
+  local CURRENT_DIR
+  CURRENT_DIR="$(pwd)"
   local GIT_ROOT_DIR
   local GITIGNORE_FILE
 
