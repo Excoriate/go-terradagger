@@ -1,13 +1,13 @@
 ---
 name: 🪲 Bug Report
-about: If something isn't working as expected on golang-cli-boilerplate CLI.
+about: If something isn't working as expected on go-terradagger CLI.
 title: "[Bug Title]"
 labels: "bug"
 ---
 
 ## 🪲 Describe the Bug
-Provide a clear explanation of the bug within the framework of golang-cli-boilerplate CLI.
-Example: "golang-cli-boilerplate crashes when attempting to provision a new resource through the `golang-cli-boilerplate resource` command."
+Provide a clear explanation of the bug within the framework of go-terradagger CLI.
+Example: "go-terradagger crashes when attempting to provision a new resource through the `go-terradagger resource` command."
 
 ## ⚡️ Type of Bug
 Please select the type of bug you are reporting:
@@ -20,17 +20,16 @@ Please select the type of bug you are reporting:
 ## 🔬 Steps to Reproduce
 Detail out the steps to reproduce the bug.
 Example:
-1. Run the `golang-cli-boilerplate resource` command.
+1. Run the `terradagger tf` command.
 2. Define the resource parameters.
 3. Observe the crash/error message.
 
 ## 🔑 Expected Behavior
 Explain what you anticipated happening.
-Example: "The CLI should've provisioned the resource and outputted success message."
 
 ## 🌚 Actual Behavior
 Describe what actually occurred given the steps.
-Example: "golang-cli-boilerplate crashed and an error message was displayed."
+Example: "go-terradagger crashed and an error message was displayed."
 
 ## 📷 Screenshots
 Include screenshots to better illustrate the bug, if necessary.

@@ -30,7 +30,7 @@ jobs:
                   go-version: ~1.21
             - name: Build for ${{ matrix.goos }}/${{ matrix.goarch }}
               run: |
-                  GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/cli
+                  GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/go-terradagger
     build-supported-go-version:
         name: Go Build Versions
         needs: build-supported-platforms

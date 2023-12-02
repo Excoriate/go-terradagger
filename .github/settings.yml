@@ -1,7 +1,7 @@
 ---
 repository:
-    name: golang-cli-boilerplate
-    description: Golang CLI Boilerplate is a bulletproof Golang CLI template with batteries included 🔋
+    name: go-terradagger
+    description: TerraDagger is a Go package for managing your infrastructure-as-code through containers.
     topics: example, devops, tooling, ecs, sre, cli
     default_branch: main
     allow_squash_merge: true

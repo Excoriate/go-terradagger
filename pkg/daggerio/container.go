@@ -17,5 +17,5 @@ func NewContainer(client *dagger.Client) *DaggerContainer {
 }
 
 func (d *DaggerContainer) Create(image string) *dagger.Container {
-	return d.Client.Container().From(image)
+	return d.go-terradaggerent.Container().From(image)
 }

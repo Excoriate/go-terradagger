@@ -14,7 +14,7 @@ import (
 	"dagger.io/dagger"
 )
 
-type Client struct {
+type go-terradaggerent struct {
 	// Implementation details, and internals.
 	Logger      o11y.LoggerInterface
 	ID          string

@@ -21,6 +21,3 @@ Link any supporting context or documentation:
 * 🔗 Github issues, documentation, helpful links.
 * ✅ Use `closes #123`, if this PR closes a GitHub issue `#123`
 
-Example:
-* 🔗 These changes relate to issue #123.
-* 🔗 For more information on the new features in the AWS Provider v3.0.0, you can check out the official [Terraform AWS Provider Guide](https://registry.terraform.io/providers/hashicorp/aws/latest/docs).

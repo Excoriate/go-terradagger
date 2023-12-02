@@ -4,6 +4,8 @@ ci/cd:
 infrastructure:
     - terraform/**
     - infra/**
+    - modules/**
+    - terragrunt/**
 documentation:
     - README.md
     - .github/ISSUE_TEMPLATE/*
@@ -25,3 +27,4 @@ patch:
     - .dockerignore
 minor:
     - pkg/*
+    - cli/*
