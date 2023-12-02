@@ -5,11 +5,10 @@
 <p align="center">An easy to understand GO library for building portables CI/CD pipelines (as code) using <b>Dagger</b> for your <b> infrastructure-as-code ☁️</b>.<br/><br/>
 
 ---
-
-[![Auto Release](https://github.com/Excoriate/vault-labs/actions/workflows/release.yml/badge.svg)](https://github.com/Excoriate/vault-labs/actions/workflows/release.yml)
-[![Terraform Check](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-terraform.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-terraform.yml)
-[![Run pre-commit](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-precommit.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-precommit.yml)
-[![Terratest](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-pr-terratest.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-pr-terratest.yml)
+[![Release](https://github.com/Excoriate/go-terradagger/actions/workflows/release.yaml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/release.yaml)
+[![Go Build TerraDagger CLI](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-build-cli.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-build-cli.yml)
+[![Go Tests Library](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-tests-library.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-tests-library.yml)
+[![Go Linter Library](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-linter-library.yaml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-linter-library.yaml)
 
 ---
 **TerraDagger** is a **GO library** that provides a set of functions and patterns for building portable CI/CD pipelines (as code) for your infrastructure-as-code. It's based on the wonderful [Dagger](https://dagger.io) pipeline-as-code project, and heavily inspired by [Terratest](https://terratest.gruntwork.io). The problem that TerraDagger tries to solve is to provide a simple way to run your [Terraform](https://www.terraform.io/) code in a portable way, and also to provide a way to run your pipelines in a containerized way, so you can run your pipelines in any environment, and also in any CI/CD platform.
