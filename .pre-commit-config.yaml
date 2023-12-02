@@ -72,6 +72,12 @@ repos:
             args:
                 - --args=--config=.tflint.hcl
 
+    - repo: https://github.com/tcort/markdown-link-check
+      rev: v3.11.2
+      hooks:
+          - id: markdown-link-check
+            args: [-q]
+
     - repo: https://github.com/terraform-docs/terraform-docs
       rev: v0.16.0
       hooks:
@@ -81,7 +87,3 @@ repos:
                 inject . || echo "Skipping $d, no .terraform-docs.yml found"; done'
             language: system
 
-#    - repo: https://github.com/hadolint/hadolint
-#      rev: v2.12.1-beta
-#      hooks:
-#          - id: hadolint-docker
