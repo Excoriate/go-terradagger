@@ -12,9 +12,6 @@ content: |-
     * 🚀 **Functionality** - Describe what the module does.
 
       ---
-      ## Example
-      Examples of this module's usage are available in the [examples](./examples) folder.
-
       ```hcl
       {{ include "./main.tf" }}
       ```

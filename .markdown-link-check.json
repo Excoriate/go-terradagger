@@ -8,6 +8,15 @@
   "ignorePatterns": [
     {
       "pattern": "^#"
+    },
+    {
+      "pattern": "^Taskfile.yml"
+    },
+    {
+      "pattern": "^.github/workflows/"
+    },
+    {
+      "pattern": "^docs/templates/"
     }
   ],
   "retryCount": 5,
