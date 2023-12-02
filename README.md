@@ -10,4 +10,3 @@
 [![Terraform Check](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-terraform.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-terraform.yml)
 [![Run pre-commit](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-precommit.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-check-precommit.yml)
 [![Terratest](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-pr-terratest.yml/badge.svg)](https://github.com/Excoriate/terraform-registry-aws-accounts-creator/actions/workflows/ci-pr-terratest.yml)
-

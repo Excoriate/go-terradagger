@@ -1,0 +1,52 @@
+---
+formatter: markdown table
+
+header-from: main.tf
+content: |-
+    # ☁️ Example module
+    ## Description
+    {{ .Header }}
+
+    Provide all the description that's required.
+
+    * 🚀 **Functionality** - Describe what the module does.
+
+      ---
+      ## Example
+      Examples of this module's usage are available in the [examples](./examples) folder.
+
+      ```hcl
+      {{ include "../../examples/default/basic/main.tf" }}
+      ```
+
+      Simple recipe:
+      ```hcl
+      {{ include "../../examples/default/basic/config/fixtures.tfvars" }}
+      ```
+
+      ---
+
+      ## Module's documentation
+      (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
+      {{ .Providers }}
+
+      {{ .Modules }}
+
+      {{ .Resources }}
+
+      {{ .Requirements }}
+
+      {{ .Inputs }}
+
+      {{ .Outputs }}
+
+output:
+    file: README.md
+    mode: inject
+    template: |-
+        <!-- BEGIN_TF_DOCS -->
+        {{ .Content }}
+        <!-- END_TF_DOCS -->
+settings:
+    anchor: true
+    color: true

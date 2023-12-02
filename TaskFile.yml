@@ -12,9 +12,9 @@ dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragru
 
 includes:
     common:
-        taskfile: ./taskfiles/Taskfile.common.yml
-    hooks:
-        taskfile: ./taskfiles/Taskfile.precommit.yml
+        taskfile: ./taskfiles/taskfile.common.yml
+    precommit:
+        taskfile: ./taskfiles/taskfile.precommit.yml
     tf:
         taskfile: ./taskfiles/Taskfile.terraform.yml
 
@@ -26,15 +26,15 @@ tasks:
         cmds:
             - task: common:default
 
-    hooks-init:
+    pc-init:
         desc: Initialize and install required hooks
         cmds:
-            - task: hooks:hooks-init
+            - task: precommit:hooks-init
 
-    hooks-run:
+    pc-run:
         desc: Run all the hooks described in the .pre-commit-config.yaml file
         cmds:
-            - task: hooks:hooks-run
+            - task: precommit:hooks-run
     # ***********************
     # Terraform task (modules)
     # (These tasks are used to run terraform commands in the module directory)
