@@ -77,7 +77,7 @@ repos:
       hooks:
           - id: markdown-link-check
             args:
-                - q
+                - -q
                 - --config=.markdown-link-check.json
 
     - repo: https://github.com/terraform-docs/terraform-docs
