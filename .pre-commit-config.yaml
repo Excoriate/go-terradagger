@@ -54,7 +54,8 @@ repos:
           - id: go-fmt
             files: ^(pkg|cli)/(.*/)*.*\.go$
           - id: go-vet
-            files: ^(pkg|cli)/(.*/)*.*\.go$
+#            files: ^(pkg|cli)/(.*/)*.*\.go$
+            files: ^(.*/)*.*\.go$
           - id: go-build
             files: ^(pkg|cli)/(.*/)*.*\.go$
           - id: go-mod-tidy
@@ -87,11 +88,3 @@ repos:
 #      rev: v2.12.1-beta
 #      hooks:
 #          - id: hadolint-docker
-
-    - repo: https://github.com/dnephin/pre-commit-golang
-      rev: v0.5.1
-      hooks:
-          - id: go-fmt
-          - id: go-vet
-          - id: go-build
-          - id: go-mod-tidy
