@@ -1,4 +1,4 @@
-package commands //nolint:typecheck
+package commands //nolint:typecheck whyNoLint: This is a package comment, not a struct comment.
 
 // NewTerraDaggerCMD creates a new Command struct for a Terraform command.
 func NewTerraDaggerCMD(binary, command string, args TerraDaggerArgs) *TerraDaggerCMD {

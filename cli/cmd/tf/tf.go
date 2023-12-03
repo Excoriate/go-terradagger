@@ -34,10 +34,10 @@ var Cmd = &cobra.Command{
 			Title: tui.NewTitleWriter(),
 		}
 
-		ux.Title.ShowTitle("Terraform CI/CD")
+		ux.Title.ShowTitle("TerraDagger CLI")
 
 		td, err := terradagger.New(ctx, &terradagger.ClientOptions{
-			RootDir: "../", //
+			RootDir: "../",
 		})
 
 		defer td.DaggerClient.Close()

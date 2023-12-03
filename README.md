@@ -37,12 +37,46 @@ go get github.com/Excoriate/go-terradagger
 
 ### Getting Started 🚀
 
-```bash
-```
+If you're familiar with [Terratest](https://terratest.gruntwork.io), then you'll find this library very similar. The main difference is that this library is based on [Dagger](https://dagger.io), and it's meant to be used as a library.
 
+```go
+td, err := terradagger.New(ctx, &terradagger.ClientOptions{
+	RootDir: "../",
+})
+
+defer td.DaggerClient.Close()
+
+if err != nil {
+	return err
+}
+
+terraformOptions := &terraform.Options{
+	TerraformDir: "test-data/terraform/root-module-1",
+}
+
+_ = terraform.Init(td, terraformOptions, nil)
+_ = terraform.Plan(td, terraformOptions, &terraform.PlanOptions{
+	Vars: map[string]interface{}{
+		"is_enabled": true,
+	},
+})
+_ = terraform.Apply(td, terraformOptions, &terraform.ApplyOptions{
+	Vars: map[string]interface{}{
+		"is_enabled": true,
+	},
+})
+_ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
+	Vars: map[string]interface{}{
+		"is_enabled": true,
+	},
+})
+
+```
 
 ## Roadmap 🗓️
 
+- [x] Add basic support for Terraform commands (init, validate, plan, apply, destroy, etc).
+- [ ] Add plenty of missing tests 🧪
 - [ ] Add support for [Terragrunt](https://terragrunt.gruntwork.io/).
 - [ ] Add support for [Terratest](https://terratest.gruntwork.io/).
 - [ ] Mature a CLI 🤖 as a wrapper (and non-programmatic) way to use TerraDagger.

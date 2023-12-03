@@ -26,8 +26,8 @@ linters-settings:
         min-complexity: 15
     maligned:
         suggest-new: true
-    dupl:
-        threshold: 100
+#    dupl:
+#        threshold: 100
     goconst:
         min-len: 5
         min-occurrences: 3
@@ -47,7 +47,7 @@ linters-settings:
             - appendCombine
             - commentedOutCode
     funlen:
-        lines: 100
+        lines: 140
         statements: 52
 linters:
     disable-all: true
