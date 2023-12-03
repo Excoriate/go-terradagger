@@ -13,9 +13,11 @@ import (
 )
 
 var (
-	recipe   string // maps to the recipe in the /examples/<recipe>
-	scenario string // maps to a config/<scenario>.tfvars per each recipe.
-	all      bool
+	terraformDir        string
+	terraformVars       map[string]string
+	terraformTFVarFiles []string
+	terraformVersion    string
+	all                 bool
 )
 
 var Cmd = &cobra.Command{
@@ -35,27 +37,36 @@ var Cmd = &cobra.Command{
 		ux.Title.ShowTitle("Terraform CI/CD")
 
 		td, err := terradagger.New(ctx, &terradagger.ClientOptions{
-			RootDir: "../",
+			RootDir: "../", //
 		})
 
 		defer td.DaggerClient.Close()
 
 		if err != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Unable to create a new terradagger",
+				Message: "Unable to create a new terradagger client",
 				Error:   err,
 			})
 			os.Exit(1)
 		}
 
 		terraformOptions := &terraform.Options{
-			TerraformDir: "modules/default",
+			TerraformDir: "test-data/terraform/root-module-1",
 		}
 
 		_ = terraform.Init(td, terraformOptions, nil)
 		_ = terraform.Plan(td, terraformOptions, &terraform.PlanOptions{
 			Vars: map[string]interface{}{
-				"aws_region": "us-east-1",
+				"is_enabled": true,
+			},
+		})
+		_ = terraform.Apply(td, terraformOptions, &terraform.ApplyOptions{
+			Vars: map[string]interface{}{
+				"is_enabled": true,
+			},
+		})
+		_ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
+			Vars: map[string]interface{}{
 				"is_enabled": true,
 			},
 		})
@@ -63,21 +74,24 @@ var Cmd = &cobra.Command{
 }
 
 func AddFlags() {
-	Cmd.PersistentFlags().StringVarP(&recipe, "recipe", "", "basic",
-		"Recipe to run. By default, "+
-			"it'll run the 'basic' recipe in the 'examples' folder.")
-
-	Cmd.PersistentFlags().StringVarP(&scenario, "scenario", "", "fixtures",
-		"Scenario to run. By default, "+
-			"it'll run the 'fixtures' scenario in the 'config' folder.")
-
 	Cmd.PersistentFlags().BoolVarP(&all, "all", "", false, "Run all recipes in the 'examples' folder.")
+	Cmd.PersistentFlags().StringVarP(&terraformDir, "terraform-dir", "", "",
+		"The directory where the terraform code resides. "+
+			"It is also the directory that'll be mounted into Dagger's container.")
+	Cmd.PersistentFlags().StringToStringVar(&terraformVars, "terraform-vars", map[string]string{},
+		"Variables to pass to terraform.")
+	Cmd.PersistentFlags().StringSliceVar(&terraformTFVarFiles, "terraform-tfvar-files", []string{},
+		"TFVar files to pass to terraform.")
+	Cmd.PersistentFlags().StringVarP(&terraformVersion, "terraform-version", "", "",
+		"The version of terraform to use.")
 
-	_ = viper.BindPFlag("recipe", Cmd.PersistentFlags().Lookup("recipe"))
-	_ = viper.BindPFlag("scenario", Cmd.PersistentFlags().Lookup("scenario"))
 	_ = viper.BindPFlag("all", Cmd.PersistentFlags().Lookup("all"))
-
+	_ = viper.BindPFlag("terraform-dir", Cmd.PersistentFlags().Lookup("terraform-dir"))
+	_ = viper.BindPFlag("terraform-vars", Cmd.PersistentFlags().Lookup("terraform-vars"))
+	_ = viper.BindPFlag("terraform-tfvar-files", Cmd.PersistentFlags().Lookup("terraform-tfvar-files"))
+	_ = viper.BindPFlag("terraform-version", Cmd.PersistentFlags().Lookup("terraform-version"))
 }
+
 func init() {
 	AddFlags()
 }

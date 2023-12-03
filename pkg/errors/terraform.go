@@ -63,3 +63,23 @@ func (e *ErrTerraformVarFileIsInvalid) Error() string {
 	return fmt.Sprintf("The var file path %s is invalid, or it does not exist in the terraform dir %s: %s",
 		e.VarFilePath, e.TerraformDir, e.ErrWrapped)
 }
+
+type ErrTerraformApplyFailedToStart struct {
+	ErrWrapped error
+	Details    string
+}
+
+func (e *ErrTerraformApplyFailedToStart) Error() string {
+	return fmt.Sprintf("Failed to start the terraform apply command: %s: %s",
+		e.Details, e.ErrWrapped)
+}
+
+type ErrTerraformDestroyFailedToStart struct {
+	ErrWrapped error
+	Details    string
+}
+
+func (e *ErrTerraformDestroyFailedToStart) Error() string {
+	return fmt.Sprintf("Failed to start the terraform destroy command: %s: %s",
+		e.Details, e.ErrWrapped)
+}

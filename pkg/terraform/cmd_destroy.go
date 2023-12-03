@@ -4,44 +4,27 @@ import (
 	"path/filepath"
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
+	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 
 	"github.com/Excoriate/go-terradagger/pkg/errors"
-	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
-type PlanOptions struct {
-	// VarFiles is a list of terraform var files to use when running terraform plan
+type DestroyOptions struct {
+	// VarFiles is a list of terraform var files to use when running terraform destroy
 	VarFiles []string
 
-	// PlanOutFilePath is the path to save the plan file
-	PlanOutFilePath string
-
-	// Vars is a map of terraform vars to use when running terraform plan
+	// Vars is a map of terraform vars to use when running terraform destroy
 	Vars map[string]interface{}
 }
 
-func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
+func (o *DestroyOptions) validateCMDOptions(terraformDir string) error {
 	if o.VarFiles == nil {
 		o.VarFiles = []string{}
 	}
 
 	if o.Vars == nil {
 		o.Vars = map[string]interface{}{}
-	}
-
-	if o.PlanOutFilePath != "" {
-		planOutFilePath := filepath.Join(terraformDir, o.PlanOutFilePath)
-
-		if err := utils.FileExist(planOutFilePath); err != nil {
-			return &errors.ErrTerraformPlanFilePathIsInvalid{
-				ErrWrapped:   err,
-				PlanFilePath: o.PlanOutFilePath,
-				TerraformDir: terraformDir,
-			}
-		}
-
-		o.PlanOutFilePath = planOutFilePath
 	}
 
 	// Check each of the *.tfvars passed.
@@ -75,30 +58,30 @@ func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
 	return nil
 }
 
-func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) error {
+func Destroy(td *terradagger.Client, options *Options, destroyOptions *DestroyOptions) error {
 	if options == nil {
 		options = &Options{}
 	}
 
-	if planOptions == nil {
-		planOptions = &PlanOptions{}
+	if destroyOptions == nil {
+		destroyOptions = &DestroyOptions{}
 	}
 
 	if err := options.validate(); err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+		return &errors.ErrTerraformDestroyFailedToStart{
 			ErrWrapped: err,
-			Details:    "the options passed to the terraform command are invalid",
+			Details:    "the options passed to the terraform destroy command are invalid",
 		}
 	}
 
-	if err := planOptions.validateCMDOptions(options.TerraformDir); err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+	if err := destroyOptions.validateCMDOptions(options.TerraformDir); err != nil {
+		return &errors.ErrTerraformDestroyFailedToStart{
 			ErrWrapped: err,
-			Details:    "the plan options passed to the terraform command are invalid",
+			Details:    "the destroy options passed to the terraform destroy command are invalid",
 		}
 	}
 
-	td.Logger.Info("All the options are valid, and the terraform plan command can be started.")
+	td.Logger.Info("All the options are valid, and the terraform destroy command can be started.")
 
 	// Setting the required terraform init args.
 	tfInitArgs := &commands.CmdArgs{}
@@ -123,19 +106,12 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	tfInitCMD := commands.NewTerraDaggerCMD("terraform", "init", tfInitArgs.FormatArguments())
 	tfInitCMD.OmitBinaryNameInCommand = true
 
-	// Setting the required terraform plan args, based on options.
-	tfPlanArgs := &commands.CmdArgs{}
-	if planOptions.PlanOutFilePath != "" {
-		tfPlanArgs.AddNew(commands.CommandArgument{
-			ArgName:  "-out",
-			ArgValue: planOptions.PlanOutFilePath,
-			ArgType:  commands.ArgTypeValue,
-		})
-	}
+	// Setting the required terraform destroy args, based on options.
+	tfDestroyArgs := &commands.CmdArgs{}
 
-	if len(planOptions.VarFiles) > 0 {
-		for _, varFile := range planOptions.VarFiles {
-			tfPlanArgs.AddNew(commands.CommandArgument{
+	if len(destroyOptions.VarFiles) > 0 {
+		for _, varFile := range destroyOptions.VarFiles {
+			tfDestroyArgs.AddNew(commands.CommandArgument{
 				ArgName:  "-var-file",
 				ArgValue: varFile,
 				ArgType:  commands.ArgTypeValue,
@@ -144,29 +120,36 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	}
 
 	// In case of -vars, we need to convert the map to a slice of CommandArgument.
-	if len(planOptions.Vars) > 0 {
-		varsArgsConverted, err := convertInputVars(planOptions.Vars)
+	if len(destroyOptions.Vars) > 0 {
+		varsArgsConverted, err := convertInputVars(destroyOptions.Vars)
 		if err != nil {
-			return &errors.ErrTerraformPlanFailedToStart{
+			return &errors.ErrTerraformDestroyFailedToStart{
 				ErrWrapped: err,
-				Details:    "the plan options passed to the terraform command are invalid",
+				Details:    "the destroy options passed to the terraform destroy command are invalid",
 			}
 			// Handle the error accordingly
 		}
 
 		// Append each converted var argument
 		for _, arg := range varsArgsConverted {
-			tfPlanArgs.AddNew(arg)
+			tfDestroyArgs.AddNew(arg)
 		}
 	}
 
-	tfPlanCMD := commands.NewTerraDaggerCMD("terraform", "plan", tfPlanArgs.FormatArguments())
-	tfPlanCMD.OmitBinaryNameInCommand = true
+	// Add the -auto-approve flag to the destroy command as a default
+	// TODO: I'm not sure about this. Perhaps it should be a flag in the options?
+	tfDestroyArgs.AddNew(commands.CommandArgument{
+		ArgName: "-auto-approve",
+		ArgType: commands.ArgTypeFlag,
+	})
+
+	tfDestroyCDM := commands.NewTerraDaggerCMD("terraform", "destroy", tfDestroyArgs.FormatArguments())
+	tfDestroyCDM.OmitBinaryNameInCommand = true
 
 	// Add the necessary commands to the list of commands to run.
 	cmds := []commands.TerraDaggerCMD{
 		*tfInitCMD,
-		*tfPlanCMD,
+		*tfDestroyCDM,
 	}
 
 	tfCMDDagger := commands.ConvertCommandsToDaggerFormat(cmds)
@@ -188,9 +171,9 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	c, err := td.Configure(tdOptions)
 
 	if err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+		return &errors.ErrTerraformDestroyFailedToStart{
 			ErrWrapped: err,
-			Details:    "the terraform plan command failed to start",
+			Details:    "the terraform destroy command failed to start",
 		}
 	}
 

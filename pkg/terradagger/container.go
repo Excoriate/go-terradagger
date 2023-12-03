@@ -75,7 +75,7 @@ func (c *Container) withDirs(container *dagger.Container, mountDir *dagger.Direc
 	return container
 }
 
-func (c *Container) withCommands(container *dagger.Container, cmds commands.TerraDaggerCMDs) *dagger.Container {
+func (c *Container) withCommands(container *dagger.Container, cmds commands.DaggerEngineCMDs) *dagger.Container {
 	for _, cmds := range cmds {
 		for _, cmd := range cmds {
 			container = container.WithExec(cmd)

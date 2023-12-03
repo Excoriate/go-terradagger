@@ -4,44 +4,27 @@ import (
 	"path/filepath"
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
+	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 
 	"github.com/Excoriate/go-terradagger/pkg/errors"
-	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
-type PlanOptions struct {
-	// VarFiles is a list of terraform var files to use when running terraform plan
+type ApplyOptions struct {
+	// VarFiles is a list of terraform var files to use when running terraform apply
 	VarFiles []string
 
-	// PlanOutFilePath is the path to save the plan file
-	PlanOutFilePath string
-
-	// Vars is a map of terraform vars to use when running terraform plan
+	// Vars is a map of terraform vars to use when running terraform apply
 	Vars map[string]interface{}
 }
 
-func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
+func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
 	if o.VarFiles == nil {
 		o.VarFiles = []string{}
 	}
 
 	if o.Vars == nil {
 		o.Vars = map[string]interface{}{}
-	}
-
-	if o.PlanOutFilePath != "" {
-		planOutFilePath := filepath.Join(terraformDir, o.PlanOutFilePath)
-
-		if err := utils.FileExist(planOutFilePath); err != nil {
-			return &errors.ErrTerraformPlanFilePathIsInvalid{
-				ErrWrapped:   err,
-				PlanFilePath: o.PlanOutFilePath,
-				TerraformDir: terraformDir,
-			}
-		}
-
-		o.PlanOutFilePath = planOutFilePath
 	}
 
 	// Check each of the *.tfvars passed.
@@ -75,30 +58,30 @@ func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
 	return nil
 }
 
-func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) error {
+func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions) error {
 	if options == nil {
 		options = &Options{}
 	}
 
-	if planOptions == nil {
-		planOptions = &PlanOptions{}
+	if applyOptions == nil {
+		applyOptions = &ApplyOptions{}
 	}
 
 	if err := options.validate(); err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+		return &errors.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
 			Details:    "the options passed to the terraform command are invalid",
 		}
 	}
 
-	if err := planOptions.validateCMDOptions(options.TerraformDir); err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+	if err := applyOptions.validateCMDOptions(options.TerraformDir); err != nil {
+		return &errors.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
-			Details:    "the plan options passed to the terraform command are invalid",
+			Details:    "the apply options passed to the terraform command are invalid",
 		}
 	}
 
-	td.Logger.Info("All the options are valid, and the terraform plan command can be started.")
+	td.Logger.Info("All the options are valid, and the terraform apply command can be started.")
 
 	// Setting the required terraform init args.
 	tfInitArgs := &commands.CmdArgs{}
@@ -123,19 +106,12 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	tfInitCMD := commands.NewTerraDaggerCMD("terraform", "init", tfInitArgs.FormatArguments())
 	tfInitCMD.OmitBinaryNameInCommand = true
 
-	// Setting the required terraform plan args, based on options.
-	tfPlanArgs := &commands.CmdArgs{}
-	if planOptions.PlanOutFilePath != "" {
-		tfPlanArgs.AddNew(commands.CommandArgument{
-			ArgName:  "-out",
-			ArgValue: planOptions.PlanOutFilePath,
-			ArgType:  commands.ArgTypeValue,
-		})
-	}
+	// Setting the required terraform apply args, based on options.
+	tfApplyArgs := &commands.CmdArgs{}
 
-	if len(planOptions.VarFiles) > 0 {
-		for _, varFile := range planOptions.VarFiles {
-			tfPlanArgs.AddNew(commands.CommandArgument{
+	if len(applyOptions.VarFiles) > 0 {
+		for _, varFile := range applyOptions.VarFiles {
+			tfApplyArgs.AddNew(commands.CommandArgument{
 				ArgName:  "-var-file",
 				ArgValue: varFile,
 				ArgType:  commands.ArgTypeValue,
@@ -144,29 +120,36 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	}
 
 	// In case of -vars, we need to convert the map to a slice of CommandArgument.
-	if len(planOptions.Vars) > 0 {
-		varsArgsConverted, err := convertInputVars(planOptions.Vars)
+	if len(applyOptions.Vars) > 0 {
+		varsArgsConverted, err := convertInputVars(applyOptions.Vars)
 		if err != nil {
-			return &errors.ErrTerraformPlanFailedToStart{
+			return &errors.ErrTerraformApplyFailedToStart{
 				ErrWrapped: err,
-				Details:    "the plan options passed to the terraform command are invalid",
+				Details:    "the apply options passed to the terraform command are invalid",
 			}
 			// Handle the error accordingly
 		}
 
 		// Append each converted var argument
 		for _, arg := range varsArgsConverted {
-			tfPlanArgs.AddNew(arg)
+			tfApplyArgs.AddNew(arg)
 		}
 	}
 
-	tfPlanCMD := commands.NewTerraDaggerCMD("terraform", "plan", tfPlanArgs.FormatArguments())
-	tfPlanCMD.OmitBinaryNameInCommand = true
+	// Add the -auto-approve flag to the apply command as a default
+	// TODO: I'm not sure about this. Perhaps it should be a flag in the options?
+	tfApplyArgs.AddNew(commands.CommandArgument{
+		ArgName: "-auto-approve",
+		ArgType: commands.ArgTypeFlag,
+	})
+
+	tfApplyCMD := commands.NewTerraDaggerCMD("terraform", "apply", tfApplyArgs.FormatArguments())
+	tfApplyCMD.OmitBinaryNameInCommand = true
 
 	// Add the necessary commands to the list of commands to run.
 	cmds := []commands.TerraDaggerCMD{
 		*tfInitCMD,
-		*tfPlanCMD,
+		*tfApplyCMD,
 	}
 
 	tfCMDDagger := commands.ConvertCommandsToDaggerFormat(cmds)
@@ -188,9 +171,9 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	c, err := td.Configure(tdOptions)
 
 	if err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+		return &errors.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
-			Details:    "the terraform plan command failed to start",
+			Details:    "the terraform apply command failed to start",
 		}
 	}
 

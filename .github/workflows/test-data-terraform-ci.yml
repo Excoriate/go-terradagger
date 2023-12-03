@@ -111,4 +111,4 @@ jobs:
                   tflint --version
                   tflint --init
                   tflint --disable-rule=terraform_module_pinned_source
-                  tflint .
+                  tflint

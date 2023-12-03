@@ -36,7 +36,7 @@ type ClientConfigOptions struct {
 	MountDir     string
 	ExcludedDirs []string
 	// TerraDaggerCMDs     [][]string
-	TerraDaggerCMDs commands.TerraDaggerCMDs
+	TerraDaggerCMDs commands.DaggerEngineCMDs
 }
 
 type Core interface {

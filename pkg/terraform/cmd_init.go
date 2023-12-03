@@ -1,12 +1,12 @@
 package terraform
 
 import (
-	"fmt"
+	"path/filepath"
+
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 	"github.com/Excoriate/go-terradagger/pkg/errors"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
-	"path/filepath"
 )
 
 type InitOptions struct {
@@ -61,42 +61,38 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 
 	td.Logger.Info("All the options are valid, and the terraform init command can be started.")
 
-	tfInitCMD := commands.GetTerraformCommand("init", nil)
-	tfInitCMD.OmitBinaryNameInCommand = true
+	// Resolving the arguments
+	args := &commands.CmdArgs{}
 
 	if initOptions.NoColor {
-		td.Logger.Info("The option no-color is set to true")
-		tfInitCMD, _ = commands.AddArgsToCommand(tfInitCMD, []commands.Args{
-			{
-				ArgName:  "no-color",
-				ArgValue: "",
-			},
+		args.AddNew(commands.CommandArgument{
+			ArgName:  "no-color",
+			ArgValue: "true",
+			ArgType:  commands.ArgTypeFlag,
 		})
 	}
 
 	if initOptions.BackendConfigFile != "" {
-		td.Logger.Info(fmt.Sprintf("The option backend-config is set to %s", initOptions.BackendConfigFile))
-		tfInitCMD, _ = commands.AddArgsToCommand(tfInitCMD, []commands.Args{
-			{
-				ArgName:  "backend-config",
-				ArgValue: initOptions.BackendConfigFile,
-			},
+		args.AddNew(commands.CommandArgument{
+			ArgName:  "backend-config",
+			ArgValue: initOptions.BackendConfigFile,
+			ArgType:  commands.ArgTypeKeyValue,
 		})
 	}
 
 	if initOptions.Upgrade {
-		td.Logger.Info("The option upgrade is set to true")
-		tfInitCMD, _ = commands.AddArgsToCommand(tfInitCMD, []commands.Args{
-			{
-				ArgName:  "upgrade",
-				ArgValue: "",
-			},
+		args.AddNew(commands.CommandArgument{
+			ArgName:  "upgrade",
+			ArgValue: "true",
+			ArgType:  commands.ArgTypeFlag,
 		})
 	}
 
-	// tfCMDDagger := commands.ConvertCommandToDaggerFormat(tfInitCMD)
-	cmds := []commands.Command{
-		tfInitCMD,
+	tfInitCMD := commands.NewTerraDaggerCMD("terraform", "init", args.FormatArguments())
+	tfInitCMD.OmitBinaryNameInCommand = true
+
+	cmds := []commands.TerraDaggerCMD{
+		*tfInitCMD,
 	}
 
 	tfCMDDagger := commands.ConvertCommandsToDaggerFormat(cmds)

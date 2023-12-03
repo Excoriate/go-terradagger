@@ -9,6 +9,7 @@
 [![Go Build TerraDagger CLI](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-build-cli.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-build-cli.yml)
 [![Go Tests Library](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-tests-library.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-tests-library.yml)
 [![Go Linter Library](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-linter-library.yaml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-linter-library.yaml)
+[![Test Data (Terraform CI)](https://github.com/Excoriate/go-terradagger/actions/workflows/test-data-terraform-ci.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/test-data-terraform-ci.yml)
 
 ---
 **TerraDagger** is a **GO library** that provides a set of functions and patterns for building portable CI/CD pipelines (as code) for your infrastructure-as-code. It's based on the wonderful [Dagger](https://dagger.io) pipeline-as-code project, and heavily inspired by [Terratest](https://terratest.gruntwork.io). The problem that TerraDagger tries to solve is to provide a simple way to run your [Terraform](https://www.terraform.io/) code in a portable way, and also to provide a way to run your pipelines in a containerized way, so you can run your pipelines in any environment, and also in any CI/CD platform.

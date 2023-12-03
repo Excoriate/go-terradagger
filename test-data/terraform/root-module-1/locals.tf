@@ -1,6 +1,4 @@
 locals {
-  aws_region_to_deploy = var.aws_region
-
   /*
     * Feature flags
   */
