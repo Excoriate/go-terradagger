@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/Excoriate/go-terradagger/pkg/config"
-	"github.com/Excoriate/go-terradagger/pkg/errors"
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 
 	"dagger.io/dagger"
@@ -34,6 +34,10 @@ func getDirs(client *dagger.Client, mountDir, workDir string) *DirConfig {
 // resolveMountDirPath resolves the mount directory path.
 // If the mount directory path is empty, the current directory is used.
 func resolveMountDirPath(mountDirPath string) (string, error) {
+	if mountDirPath == "." {
+		return utils.GetCurrentDir(), nil
+	}
+
 	currentDir := utils.GetCurrentDir()
 	if mountDirPath == "" {
 		return filepath.Join(currentDir, "."), nil
@@ -42,7 +46,7 @@ func resolveMountDirPath(mountDirPath string) (string, error) {
 	mountDirPath = filepath.Join(currentDir, mountDirPath)
 
 	if err := utils.IsValidDir(mountDirPath); err != nil {
-		return "", &errors.ErrTerraDaggerInvalidMountPath{
+		return "", &erroer.ErrTerraDaggerInvalidMountPath{
 			ErrWrapped: err,
 			MountPath:  mountDirPath,
 		}

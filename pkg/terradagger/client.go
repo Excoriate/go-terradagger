@@ -8,21 +8,25 @@ import (
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 	"github.com/Excoriate/go-terradagger/pkg/env"
-	"github.com/Excoriate/go-terradagger/pkg/errors"
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/o11y"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 
 	"dagger.io/dagger"
 )
 
+var defaultLogOutput io.Writer = os.Stdout // Default log output is stdout
+var defaultRootDir = "."                   // Default root directory is current directory
+
 type Client struct {
 	// Implementation details, and internals.
-	Logger      o11y.LoggerInterface
-	ID          string
-	Ctx         context.Context
-	CurrentDir  string
-	HomeDir     string
-	HostEnvVars map[string]string
+	Logger          o11y.LoggerInterface
+	ID              string
+	Ctx             context.Context
+	CurrentDir      string
+	RootDirRelative string
+	HomeDir         string
+	HostEnvVars     map[string]string
 	// Client           *dagger.Client
 	MountDir     string
 	DaggerClient *dagger.Client
@@ -48,6 +52,9 @@ type Core interface {
 
 	// Run the terradagger.
 	Run(container *dagger.Container) error
+
+	// RunAndReturnOutput runs the terradagger and returns the output.
+	// RunAndReturnOutput(container *dagger.Container) (string, error)
 }
 
 // newDaggerClient creates a new dagger client.
@@ -81,61 +88,56 @@ type ClientOptions struct {
 // New creates a new terradagger client.
 // If no options are passed, the default options are used.
 func New(ctx context.Context, options *ClientOptions) (*Client, error) {
-	l := o11y.NewLogger(o11y.LoggerOptions{
+	logger := o11y.NewLogger(o11y.LoggerOptions{
 		EnableJSONHandler: true,
 		EnableStdError:    true,
 	})
 
-	hostEnvVars := env.GetAllFromHost()
-	currentDir := utils.GetCurrentDir()
 	id := utils.GetUUID()
-
-	l.Info(fmt.Sprintf("Starting terradagger with id %s", id))
+	logger.Info("Starting terradagger with id", "id", id)
 
 	client := &Client{
-		Logger:      l,
+		Logger:      logger,
 		ID:          id,
 		Ctx:         ctx,
-		CurrentDir:  currentDir,
+		CurrentDir:  utils.GetCurrentDir(),
 		HomeDir:     utils.GetHomeDir(),
-		HostEnvVars: hostEnvVars,
+		HostEnvVars: env.GetAllFromHost(),
 	}
 
-	var logOutput io.Writer = os.Stdout // Default log output is stdout
-
-	if options != nil {
-		// Adjust log output if option is provided
-		if options.WithStderrLogInDaggerClient {
-			l.Debug("Using stderr as log output for dagger client.")
-			logOutput = os.Stderr
-		}
-		mountDirPath, mountErr := resolveMountDirPath(options.RootDir)
-		if mountErr != nil {
-			return nil, &errors.ErrTerraDaggerInitializationError{
-				ErrWrapped: mountErr,
-				Details:    fmt.Sprintf("the mountDir could not be resolved with root directory: %s", options.RootDir),
-			}
-		}
-		client.MountDir = mountDirPath
-		l.Info(fmt.Sprintf("Mount directory resolved to: %s", client.MountDir))
+	if options == nil {
+		logger.Warn("No options were passed to the terradagger client. Using default options.")
+		options = &ClientOptions{RootDir: defaultRootDir}
 	}
+
+	client.RootDirRelative = options.RootDir
+	mountDirPath, err := resolveMountDirPath(options.RootDir)
+	if err != nil {
+		return nil, fmt.Errorf("terraDagger initialization error: failed to resolve mount directory with root directory %s: %w", options.RootDir, err)
+	}
+
+	client.MountDir = mountDirPath
+	logger.Info("Mount directory resolved", "mountDir", client.MountDir)
+
+	logOutput := getLogOutput(options.WithStderrLogInDaggerClient, logger)
 
 	daggerClient, err := newDaggerClient(ctx, dagger.WithLogOutput(logOutput))
 	if err != nil {
-		return nil, &errors.ErrTerraDaggerInitializationError{
-			ErrWrapped: err,
-			Details:    "the dagger client could not be started",
-		}
+		return nil, fmt.Errorf("terraDagger initialization error: failed to start dagger client: %w", err)
 	}
 
 	client.DaggerClient = daggerClient
-
-	if options == nil {
-		client.MountDir = "." // Default mount directory set to current directory
-	}
-
-	l.Info("TerraDagger client started successfully.")
+	logger.Info("TerraDagger client started successfully.")
 	return client, nil
+}
+
+// getLogOutput returns the log output for the dagger client.
+func getLogOutput(withStderrLogInDaggerClient bool, logger o11y.LoggerInterface) io.Writer {
+	if withStderrLogInDaggerClient {
+		logger.Debug("Using stderr as log output for dagger client.")
+		return os.Stderr
+	}
+	return defaultLogOutput
 }
 
 func (p *Client) Configure(options *ClientConfigOptions) (*dagger.Container, error) {
@@ -148,7 +150,7 @@ func (p *Client) Configure(options *ClientConfigOptions) (*dagger.Container, err
 	})
 
 	if err != nil {
-		return nil, &errors.ErrTerraDaggerConfigurationError{
+		return nil, &erroer.ErrTerraDaggerConfigurationError{
 			ErrWrapped: err,
 			Details:    "the container could not be created",
 		}
@@ -160,6 +162,7 @@ func (p *Client) Configure(options *ClientConfigOptions) (*dagger.Container, err
 
 	container = tdContainer.withDirs(container, dirs.MountDir, dirs.WorkDirPathInContainer,
 		options.ExcludedDirs)
+
 	container = tdContainer.withCommands(container, options.TerraDaggerCMDs)
 
 	if len(options.EnvVars) > 0 {
@@ -177,3 +180,8 @@ func (p *Client) Run(container *dagger.Container) error {
 
 	return nil
 }
+
+// RunAndReturnOutput TODO: Implement this method.
+// func (p *Client) RunAndReturnOutput(container *dagger.Container) (string, error) {
+// 	return "", nil
+// }

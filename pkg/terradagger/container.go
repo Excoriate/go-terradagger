@@ -5,7 +5,7 @@ import (
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 	"github.com/Excoriate/go-terradagger/pkg/config"
-	"github.com/Excoriate/go-terradagger/pkg/errors"
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 
 	"dagger.io/dagger"
@@ -47,13 +47,13 @@ func buildImageName(image, version string) string {
 
 func (c *Container) create(options *NewContainerOptions) (*dagger.Container, error) {
 	if options == nil {
-		return nil, &errors.ErrTerraDaggerInvalidArgumentError{
+		return nil, &erroer.ErrTerraDaggerInvalidArgumentError{
 			Details: "options cannot be nil",
 		}
 	}
 
 	if options.Image == "" {
-		return nil, &errors.ErrTerraDaggerInvalidArgumentError{
+		return nil, &erroer.ErrTerraDaggerInvalidArgumentError{
 			Details: "the image while creating a new container cannot be nil or empty",
 		}
 	}

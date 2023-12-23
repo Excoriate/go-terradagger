@@ -1,12 +1,11 @@
 package terraform
 
 import (
-	"path/filepath"
+	"fmt"
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
-	"github.com/Excoriate/go-terradagger/pkg/errors"
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
-	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
 type InitOptions struct {
@@ -18,18 +17,17 @@ type InitOptions struct {
 	Upgrade bool
 }
 
-func (o *InitOptions) validateCMDOptions(terraformDir string) error {
-	if o.BackendConfigFile != "" {
-		backendConfigFilePath := filepath.Join(terraformDir, o.BackendConfigFile)
+func (o *InitOptions) validateCMDOptions(options *Options) error {
+	if o.BackendConfigFile == "" {
+		return nil
+	}
 
-		if err := utils.FileExist(backendConfigFilePath); err != nil {
-			return &errors.ErrTerraformBackendFileIsNotFound{
-				BackendFilePath: o.BackendConfigFile,
-				ErrWrapped:      err,
-			}
+	_, err := getTerraformFileRelativePath(options.TerraformRootDir, options.TerraformDir, o.BackendConfigFile)
+	if err != nil {
+		return &erroer.ErrTerraformInitFailedToStart{
+			ErrWrapped: err,
+			Details:    fmt.Sprintf("the backend config file %s is invalid", o.BackendConfigFile),
 		}
-
-		o.BackendConfigFile = backendConfigFilePath
 	}
 
 	return nil
@@ -37,23 +35,21 @@ func (o *InitOptions) validateCMDOptions(terraformDir string) error {
 
 // Init Configures a 'terraform init' command and runs it.
 func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) error {
-	if options == nil {
-		options = &Options{}
-	}
+	setDefaultOptions(td, options)
 
 	if initOptions == nil {
 		initOptions = &InitOptions{}
 	}
 
 	if err := options.validate(); err != nil {
-		return &errors.ErrTerraformInitFailedToStart{
+		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the options passed to the terraform command are invalid",
 		}
 	}
 
-	if err := initOptions.validateCMDOptions(options.TerraformDir); err != nil {
-		return &errors.ErrTerraformInitFailedToStart{
+	if err := initOptions.validateCMDOptions(options); err != nil {
+		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the init options passed to the terraform command are invalid",
 		}
@@ -114,7 +110,7 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 	c, err := td.Configure(tdOptions)
 
 	if err != nil {
-		return &errors.ErrTerraformInitFailedToStart{
+		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform init command could not be configured",
 		}

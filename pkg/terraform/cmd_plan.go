@@ -1,13 +1,11 @@
 package terraform
 
 import (
-	"path/filepath"
+	"fmt"
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
-
-	"github.com/Excoriate/go-terradagger/pkg/errors"
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
-	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
 type PlanOptions struct {
@@ -19,9 +17,12 @@ type PlanOptions struct {
 
 	// Vars is a map of terraform vars to use when running terraform plan
 	Vars map[string]interface{}
+
+	RefreshOnly bool
+	Refresh     bool
 }
 
-func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
+func (o *PlanOptions) validateCMDOptions(options *Options) error {
 	if o.VarFiles == nil {
 		o.VarFiles = []string{}
 	}
@@ -30,39 +31,19 @@ func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
 		o.Vars = map[string]interface{}{}
 	}
 
-	if o.PlanOutFilePath != "" {
-		planOutFilePath := filepath.Join(terraformDir, o.PlanOutFilePath)
-
-		if err := utils.FileExist(planOutFilePath); err != nil {
-			return &errors.ErrTerraformPlanFilePathIsInvalid{
-				ErrWrapped:   err,
-				PlanFilePath: o.PlanOutFilePath,
-				TerraformDir: terraformDir,
-			}
-		}
-
-		o.PlanOutFilePath = planOutFilePath
-	}
+	// TODO: Add support for output the plan file.
+	// TOOD: Add option if the Vars are passed, a .hcl variables.tf should be parsed.
 
 	// Check each of the *.tfvars passed.
 	var varFilesNormalised []string
 	for _, varFile := range o.VarFiles {
-		varFilePath := filepath.Join(terraformDir, varFile)
+		varFilePath, err := getTerraformFileRelativePath(options.TerraformRootDir,
+			options.TerraformDir, varFile)
 
-		if err := utils.FileExist(varFilePath); err != nil {
-			return &errors.ErrTerraformVarFileIsInvalid{
-				ErrWrapped:   err,
-				VarFilePath:  varFile,
-				TerraformDir: terraformDir,
-			}
-		}
-
-		// If the file doesn't have the .json or tfvars extension, fail.
-		if filepath.Ext(varFilePath) != ".json" && filepath.Ext(varFilePath) != ".tfvars" {
-			return &errors.ErrTerraformVarFileIsInvalid{
-				ErrWrapped:   nil,
-				VarFilePath:  varFile,
-				TerraformDir: terraformDir,
+		if err != nil {
+			return &erroer.ErrTerraformPlanFailedToStart{
+				ErrWrapped: err,
+				Details:    fmt.Sprintf("the var file %s is invalid", varFile),
 			}
 		}
 
@@ -76,23 +57,21 @@ func (o *PlanOptions) validateCMDOptions(terraformDir string) error {
 }
 
 func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) error {
-	if options == nil {
-		options = &Options{}
-	}
+	setDefaultOptions(td, options)
 
 	if planOptions == nil {
 		planOptions = &PlanOptions{}
 	}
 
 	if err := options.validate(); err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+		return &erroer.ErrTerraformPlanFailedToStart{
 			ErrWrapped: err,
 			Details:    "the options passed to the terraform command are invalid",
 		}
 	}
 
-	if err := planOptions.validateCMDOptions(options.TerraformDir); err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+	if err := planOptions.validateCMDOptions(options); err != nil {
+		return &erroer.ErrTerraformPlanFailedToStart{
 			ErrWrapped: err,
 			Details:    "the plan options passed to the terraform command are invalid",
 		}
@@ -100,28 +79,7 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 
 	td.Logger.Info("All the options are valid, and the terraform plan command can be started.")
 
-	// Setting the required terraform init args.
-	tfInitArgs := &commands.CmdArgs{}
-	tfInitArgs.AddNew(commands.CommandArgument{
-		ArgName:  "-input",
-		ArgValue: "false",
-		ArgType:  commands.ArgTypeFlag,
-	})
-
-	tfInitArgs.AddNew(commands.CommandArgument{
-		ArgName:  "-backend",
-		ArgValue: "false",
-		ArgType:  commands.ArgTypeFlag,
-	})
-
-	tfInitArgs.AddNew(commands.CommandArgument{
-		ArgName:  "-upgrade",
-		ArgValue: "false",
-		ArgType:  commands.ArgTypeFlag,
-	})
-
-	tfInitCMD := commands.NewTerraDaggerCMD("terraform", "init", tfInitArgs.FormatArguments())
-	tfInitCMD.OmitBinaryNameInCommand = true
+	tfInitCMD := initCMDDefault()
 
 	// Setting the required terraform plan args, based on options.
 	tfPlanArgs := &commands.CmdArgs{}
@@ -147,7 +105,7 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	if len(planOptions.Vars) > 0 {
 		varsArgsConverted, err := convertInputVars(planOptions.Vars)
 		if err != nil {
-			return &errors.ErrTerraformPlanFailedToStart{
+			return &erroer.ErrTerraformPlanFailedToStart{
 				ErrWrapped: err,
 				Details:    "the plan options passed to the terraform command are invalid",
 			}
@@ -188,7 +146,7 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 	c, err := td.Configure(tdOptions)
 
 	if err != nil {
-		return &errors.ErrTerraformPlanFailedToStart{
+		return &erroer.ErrTerraformPlanFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform plan command failed to start",
 		}

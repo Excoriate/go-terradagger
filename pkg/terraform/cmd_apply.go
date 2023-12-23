@@ -6,7 +6,7 @@ import (
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 
-	"github.com/Excoriate/go-terradagger/pkg/errors"
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
@@ -33,7 +33,7 @@ func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
 		varFilePath := filepath.Join(terraformDir, varFile)
 
 		if err := utils.FileExist(varFilePath); err != nil {
-			return &errors.ErrTerraformVarFileIsInvalid{
+			return &erroer.ErrTerraformVarFileIsInvalid{
 				ErrWrapped:   err,
 				VarFilePath:  varFile,
 				TerraformDir: terraformDir,
@@ -42,7 +42,7 @@ func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
 
 		// If the file doesn't have the .json or tfvars extension, fail.
 		if filepath.Ext(varFilePath) != ".json" && filepath.Ext(varFilePath) != ".tfvars" {
-			return &errors.ErrTerraformVarFileIsInvalid{
+			return &erroer.ErrTerraformVarFileIsInvalid{
 				ErrWrapped:   nil,
 				VarFilePath:  varFile,
 				TerraformDir: terraformDir,
@@ -59,23 +59,21 @@ func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
 }
 
 func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions) error {
-	if options == nil {
-		options = &Options{}
-	}
+	setDefaultOptions(td, options)
 
 	if applyOptions == nil {
 		applyOptions = &ApplyOptions{}
 	}
 
 	if err := options.validate(); err != nil {
-		return &errors.ErrTerraformApplyFailedToStart{
+		return &erroer.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
 			Details:    "the options passed to the terraform command are invalid",
 		}
 	}
 
 	if err := applyOptions.validateCMDOptions(options.TerraformDir); err != nil {
-		return &errors.ErrTerraformApplyFailedToStart{
+		return &erroer.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
 			Details:    "the apply options passed to the terraform command are invalid",
 		}
@@ -84,27 +82,7 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 	td.Logger.Info("All the options are valid, and the terraform apply command can be started.")
 
 	// Setting the required terraform init args.
-	tfInitArgs := &commands.CmdArgs{}
-	tfInitArgs.AddNew(commands.CommandArgument{
-		ArgName:  "-input",
-		ArgValue: "false",
-		ArgType:  commands.ArgTypeFlag,
-	})
-
-	tfInitArgs.AddNew(commands.CommandArgument{
-		ArgName:  "-backend",
-		ArgValue: "false",
-		ArgType:  commands.ArgTypeFlag,
-	})
-
-	tfInitArgs.AddNew(commands.CommandArgument{
-		ArgName:  "-upgrade",
-		ArgValue: "false",
-		ArgType:  commands.ArgTypeFlag,
-	})
-
-	tfInitCMD := commands.NewTerraDaggerCMD("terraform", "init", tfInitArgs.FormatArguments())
-	tfInitCMD.OmitBinaryNameInCommand = true
+	tfInitCMD := initCMDDefault()
 
 	// Setting the required terraform apply args, based on options.
 	tfApplyArgs := &commands.CmdArgs{}
@@ -123,7 +101,7 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 	if len(applyOptions.Vars) > 0 {
 		varsArgsConverted, err := convertInputVars(applyOptions.Vars)
 		if err != nil {
-			return &errors.ErrTerraformApplyFailedToStart{
+			return &erroer.ErrTerraformApplyFailedToStart{
 				ErrWrapped: err,
 				Details:    "the apply options passed to the terraform command are invalid",
 			}
@@ -171,7 +149,7 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 	c, err := td.Configure(tdOptions)
 
 	if err != nil {
-		return &errors.ErrTerraformApplyFailedToStart{
+		return &erroer.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform apply command failed to start",
 		}

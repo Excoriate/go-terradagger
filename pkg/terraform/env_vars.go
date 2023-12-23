@@ -12,7 +12,7 @@ func resolveEnvVarsByOptions(options *Options) map[string]string {
 	}
 
 	// If we should use all environment variables from the host
-	if options.UseAllEnvVarsFromHost {
+	if options.AutoInjectEnvVarsFromHost {
 		hostEnvVars := env.GetAllFromHost()
 		if hostEnvVars != nil {
 			envVars = hostEnvVars
