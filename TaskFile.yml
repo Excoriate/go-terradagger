@@ -63,6 +63,11 @@ tasks:
         cmds:
             - echo "===========> Run unit test-data"
             - go test-data -race -v ./...
+    go-test-nocache:
+        desc: Run unit test without cache
+        cmds:
+            - echo "===========> Run unit test-data"
+            - go test ./... -count=1 -v
     cli-build:
         desc: Build the terradagger CLi
         dir: ./cli

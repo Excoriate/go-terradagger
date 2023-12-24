@@ -37,18 +37,19 @@ func getDirs(client *dagger.Client, mountDir, workDir string) *DirConfig {
 // resolveMountDirPath resolves the mount directory path.
 // If the mount directory path is empty, the current directory is used.
 func resolveMountDirPath(mountDirPath string) (string, error) {
+	dirUtils := utils.DirUtils{}
 	if mountDirPath == "." {
-		return utils.GetCurrentDir(), nil
+		return dirUtils.GetCurrentDir(), nil
 	}
 
-	currentDir := utils.GetCurrentDir()
+	currentDir := dirUtils.GetCurrentDir()
 	if mountDirPath == "" {
 		return filepath.Join(currentDir, "."), nil
 	}
 
 	mountDirPath = filepath.Join(currentDir, mountDirPath)
 
-	if err := utils.IsValidDir(mountDirPath); err != nil {
+	if err := dirUtils.IsValidDir(mountDirPath); err != nil {
 		return "", &erroer.ErrTerraDaggerInvalidMountPath{
 			ErrWrapped: err,
 			MountPath:  mountDirPath,

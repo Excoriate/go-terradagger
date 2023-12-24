@@ -36,6 +36,7 @@ type CommandOptionsValidator interface {
 }
 
 func (o *Options) validate() error {
+	dirUtils := utils.DirUtils{}
 	if o.TerraformDir == "" {
 		return &erroer.ErrTerraformOptionsAreInvalid{
 			Details: "the terraform directory is required, but it was not passed",
@@ -50,7 +51,7 @@ func (o *Options) validate() error {
 
 	terraformDir := filepath.Join(o.TerraformRootDir, o.TerraformDir)
 
-	if err := utils.IsValidDir(terraformDir); err != nil {
+	if err := dirUtils.IsValidDir(terraformDir); err != nil {
 		return &erroer.ErrTerraformOptionsAreInvalid{
 			Details:    "the terraform directory is invalid",
 			ErrWrapped: err,

@@ -143,6 +143,11 @@ go-test:
 	@echo "===========> Run unit test"
 	@$(GO) test -race -v ./...
 
+.PHONY: go-test-nocache
+go-test-nocache:
+	@echo "===========> Run unit test without cache"
+	@go test ./... -count=1
+
 ## Build Go Binary
 .PHONY: go-build
 cli-build:

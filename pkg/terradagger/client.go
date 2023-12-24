@@ -143,6 +143,8 @@ func New(ctx context.Context, options *ClientOptions) (*Client, error) {
 		EnableStdError:    true,
 	})
 
+	dirUtils := utils.DirUtils{}
+
 	id := utils.GetUUID()
 	logger.Info("Starting terradagger with id", "id", id)
 
@@ -152,8 +154,8 @@ func New(ctx context.Context, options *ClientOptions) (*Client, error) {
 		Ctx:         ctx,
 		HostEnvVars: env.GetAllFromHost(),
 		Paths: &PathsCfg{
-			CurrentDir: utils.GetCurrentDir(),
-			HomeDir:    utils.GetHomeDir(),
+			CurrentDir: dirUtils.GetCurrentDir(),
+			HomeDir:    dirUtils.GetHomeDir(),
 		},
 		Dirs: &DirsCfg{
 			TerraDaggerDir:       terraDaggerDir,
@@ -336,12 +338,13 @@ func (td *Client) RunWithExport(container *dagger.Container, exportOptions *RunW
 func (td *Client) CreateTerraDaggerDirs(failIfDirExist bool) error {
 	td.Logger.Info("Creating terradagger directories.")
 	terraDaggerExportPath := resolveTerraDaggerExportPath(td.Paths.TerraDagger, td.ID)
+	dirUtils := utils.DirUtils{}
 
 	if failIfDirExist {
-		if utils.DirExist(td.Paths.TerraDagger) {
+		if dirUtils.DirExist(td.Paths.TerraDagger) {
 			return fmt.Errorf("terradagger directory already exists: %s", td.Paths.TerraDagger)
 		}
-		if utils.DirExist(terraDaggerExportPath) {
+		if dirUtils.DirExist(terraDaggerExportPath) {
 			return fmt.Errorf("export path already exists: %s", terraDaggerExportPath)
 		}
 	}
