@@ -147,7 +147,6 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 		Workdir:         options.TerraformDir,
 		MountDir:        td.Paths.MountDirPath,
 		TerraDaggerCMDs: tfCMDDagger,
-		ExportOptions:   &terradagger.ExportOptions{},
 	}
 
 	tdOptions.EnvVars = resolveEnvVarsByOptions(options)

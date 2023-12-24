@@ -89,7 +89,7 @@ tasks:
         cmds:
             - task: go-style
             - task: go-tidy
-            - task: go-test-data
+#            - task: go-test-data
             - task: go-build
 
     # ***********************

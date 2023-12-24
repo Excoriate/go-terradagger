@@ -56,15 +56,13 @@ type ClientConfigOptions struct {
 	ExcludedDirs []string
 	// TerraDaggerCMDs     [][]string
 	TerraDaggerCMDs commands.DaggerEngineCMDs
-	ExportOptions   *ExportOptions
+	exportCfg       *exportCfg
 }
 
-type ExportOptions struct {
-	ExportToHostPathCustom string // If it's not set, it'll use the default .terradagger directory.
-	// These two properties are internally resolved based on the ExportToHostPathCustom.
-	useDefaultTerraDaggerExportPath bool
-	exportToHostPath                string
-	importFromContainerPath         string
+type exportCfg struct {
+	// useDefaultTerraDaggerExportPath bool
+	exportToHostPath        string
+	importFromContainerPath string
 }
 
 type ExcludeOptions struct {
@@ -220,8 +218,8 @@ func getLogOutput(withStderrLogInDaggerClient bool, logger o11y.LoggerInterface)
 func (td *Client) Configure(options *ClientConfigOptions) (*dagger.Container, error) {
 	dirs := getDirs(td.DaggerClient, options.MountDir, options.Workdir)
 
-	if options.ExportOptions == nil {
-		options.ExportOptions = &ExportOptions{}
+	if options.exportCfg == nil {
+		options.exportCfg = &exportCfg{}
 	}
 
 	tdContainer := NewContainer(td)
@@ -261,11 +259,8 @@ func (td *Client) Configure(options *ClientConfigOptions) (*dagger.Container, er
 	// This is always set to the <root-dir>/.terradagger/<id>/export.
 	exportToHostPathResolved := resolveTerraDaggerExportPath(td.Paths.TerraDagger, td.ID)
 
-	options.ExportOptions.exportToHostPath = exportToHostPathResolved
-	options.ExportOptions.importFromContainerPath = dirs.WorkDirPathInContainer
-	if options.ExportOptions.ExportToHostPathCustom == "" {
-		options.ExportOptions.ExportToHostPathCustom = exportToHostPathResolved
-	}
+	options.exportCfg.exportToHostPath = exportToHostPathResolved
+	options.exportCfg.importFromContainerPath = dirs.WorkDirPathInContainer
 
 	return container, nil
 }
@@ -295,8 +290,8 @@ func (td *Client) RunWithExport(container *dagger.Container, exportOptions *RunW
 
 	if len(exportOptions.TargetDirsFromContainer) > 0 {
 		for _, dir := range exportOptions.TargetDirsFromContainer {
-			dirPathImport := filepath.Join(options.ExportOptions.importFromContainerPath, dir)
-			dirPathExport := filepath.Join(options.ExportOptions.exportToHostPath, filepath.Base(dir))
+			dirPathImport := filepath.Join(options.exportCfg.importFromContainerPath, dir)
+			dirPathExport := filepath.Join(options.exportCfg.exportToHostPath, filepath.Base(dir))
 
 			td.Logger.Info("Exporting directory", "directory", dir, "dirPathImport", dirPathImport, "dirPathExport", dirPathExport)
 
@@ -316,8 +311,8 @@ func (td *Client) RunWithExport(container *dagger.Container, exportOptions *RunW
 
 	if len(exportOptions.TargetFilesFromContainer) > 0 {
 		for _, file := range exportOptions.TargetFilesFromContainer {
-			filePathImport := filepath.Join(options.ExportOptions.importFromContainerPath, file)
-			filePathExport := filepath.Join(options.ExportOptions.exportToHostPath, filepath.Base(file))
+			filePathImport := filepath.Join(options.exportCfg.importFromContainerPath, file)
+			filePathExport := filepath.Join(options.exportCfg.exportToHostPath, filepath.Base(file))
 
 			td.Logger.Info("Exporting file", "file", file, "filePathImport", filePathImport, "filePathExport", filePathExport)
 
