@@ -44,3 +44,13 @@ func TestFindGitRepoDir(t *testing.T) {
 			"expected error message to state a git repository was not found")
 	})
 }
+
+func TestIsRelativePath(t *testing.T) {
+	t.Run("relative path", func(t *testing.T) {
+		assert.NoError(t, IsRelative("relative/path"))
+	})
+
+	t.Run("absolute path", func(t *testing.T) {
+		assert.Error(t, IsRelative("/absolute/path"))
+	})
+}
