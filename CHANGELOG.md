@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/Excoriate/go-terradagger/compare/v1.0.0...v1.1.0) (2023-12-24)
+
+
+### Features
+
+* Add logic for exporting directories and files ([dd2fda7](https://github.com/Excoriate/go-terradagger/commit/dd2fda78a8492d0e382ceac07271076321ee4e19))
+
+
+### Refactoring
+
+* Enhance the code a bit ([40183d1](https://github.com/Excoriate/go-terradagger/commit/40183d1318beabaf8df429bafac36eca4440fa9c))
+* remove ununsed task, make golangci-linter happy ([22974d4](https://github.com/Excoriate/go-terradagger/commit/22974d4244a537f7e089bc00321430719e3deffa))
+
 ## 1.0.0 (2023-12-03)
 
 
