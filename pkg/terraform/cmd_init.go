@@ -101,7 +101,7 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 		Image:           tfImage,
 		Version:         tfVersion,
 		Workdir:         options.TerraformDir,
-		MountDir:        td.MountDir,
+		MountDir:        td.Paths.MountDirPath,
 		TerraDaggerCMDs: tfCMDDagger,
 	}
 

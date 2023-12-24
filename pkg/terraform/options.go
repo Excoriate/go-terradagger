@@ -70,5 +70,5 @@ func setDefaultOptions(td *terradagger.Client, options *Options) {
 	if options == nil {
 		options = &Options{}
 	}
-	options.TerraformRootDir = td.RootDirRelative
+	options.TerraformRootDir = td.Paths.RootDirRelative
 }

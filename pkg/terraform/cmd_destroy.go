@@ -140,7 +140,7 @@ func Destroy(td *terradagger.Client, options *Options, destroyOptions *DestroyOp
 		Image:           tfImage,
 		Version:         tfVersion,
 		Workdir:         options.TerraformDir,
-		MountDir:        td.MountDir,
+		MountDir:        td.Paths.MountDirPath,
 		TerraDaggerCMDs: tfCMDDagger,
 	}
 

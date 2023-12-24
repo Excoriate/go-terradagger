@@ -117,3 +117,18 @@ func FileExist(path string) error {
 	}
 	return nil
 }
+
+func DirExist(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+func IsRelative(path string) error {
+	if filepath.IsAbs(path) {
+		return fmt.Errorf("path %s is not relative", path)
+	}
+	return nil
+}

@@ -42,3 +42,4 @@
 
 # Ignore TerraDagger specific files.
 terradagger-cli
+.terradagger

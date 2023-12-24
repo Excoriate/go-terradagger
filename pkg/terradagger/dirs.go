@@ -11,6 +11,9 @@ import (
 	"dagger.io/dagger"
 )
 
+var terraDaggerDir = ".terradagger"
+var terraDaggerExportDir = "export"
+
 type DirConfig struct {
 	MountDir               *dagger.Directory
 	WorkDirPath            string
@@ -53,4 +56,53 @@ func resolveMountDirPath(mountDirPath string) (string, error) {
 	}
 
 	return mountDirPath, nil
+}
+
+// resolveTerraDaggerPath resolves the terra dagger directory.
+func resolveTerraDaggerPath(rootDir string) (string, error) {
+	if rootDir == "" {
+		rootDir = defaultRootDirRelative
+	}
+
+	if err := utils.IsRelative(rootDir); err != nil {
+		return "", fmt.Errorf("the root directory %s is not a relative path", rootDir)
+	}
+
+	rootDirAbsolute, err := filepath.Abs(rootDir)
+	if err != nil {
+		return "", fmt.Errorf("the root directory %s is not a valid directory", rootDir)
+	}
+
+	return filepath.Join(rootDirAbsolute, terraDaggerDir), nil
+}
+
+type RootDirConfig struct {
+	RootDirRelative string
+	RootDirAbsolute string
+}
+
+// resolveRootDir resolves the root directory.
+func resolveRootDir(rootDir string) (RootDirConfig, error) {
+	if rootDir == "" {
+		rootDir = defaultRootDirRelative
+	}
+
+	if err := utils.IsRelative(rootDir); err != nil {
+		return RootDirConfig{}, fmt.Errorf("the root directory %s is not a relative path", rootDir)
+	}
+
+	rootDirAbsolute, err := filepath.Abs(rootDir)
+	if err != nil {
+		return RootDirConfig{}, fmt.Errorf("the root directory %s is not a valid directory", rootDir)
+	}
+
+	return RootDirConfig{
+		RootDirRelative: rootDir,
+		RootDirAbsolute: rootDirAbsolute,
+	}, nil
+}
+
+// resolveTerraDaggerExportPath resolves the terra dagger export path.
+func resolveTerraDaggerExportPath(terraDaggerPath, terraDaggerID string) string {
+	return filepath.Join(terraDaggerPath, terraDaggerID, terraDaggerExportDir)
 }

@@ -85,6 +85,11 @@ func (c *Container) withCommands(container *dagger.Container, cmds commands.Dagg
 	return container
 }
 
+type WithCommandsAndExport struct {
+	ExportDirPathsInHost  []string
+	ExportFilePathsInHost []string
+}
+
 func (c *Container) withEnvVars(container *dagger.Container, envVars map[string]string) *dagger.Container {
 	for key, value := range envVars {
 		container = container.WithEnvVariable(key, value)

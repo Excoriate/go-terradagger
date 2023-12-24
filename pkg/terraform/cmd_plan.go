@@ -137,7 +137,7 @@ func Plan(td *terradagger.Client, options *Options, planOptions *PlanOptions) er
 		Image:           tfImage,
 		Version:         tfVersion,
 		Workdir:         options.TerraformDir,
-		MountDir:        td.MountDir,
+		MountDir:        td.Paths.MountDirPath,
 		TerraDaggerCMDs: tfCMDDagger,
 	}
 

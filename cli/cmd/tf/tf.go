@@ -64,6 +64,7 @@ var Cmd = &cobra.Command{
 			Vars: map[string]interface{}{
 				"is_enabled": true,
 			},
+			PreserveTFState: true, // Preserve the state file.
 		})
 		_ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
 			Vars: map[string]interface{}{

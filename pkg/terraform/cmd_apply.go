@@ -16,6 +16,11 @@ type ApplyOptions struct {
 
 	// Vars is a map of terraform vars to use when running terraform apply
 	Vars map[string]interface{}
+
+	// PreserveTFState is a flag to preserve the terraform state file and,
+	// if set to true, the state file will be copied to the host machine.
+	// and passed to the next command, for instance, the destroy command.
+	PreserveTFState bool
 }
 
 func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
@@ -140,12 +145,12 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 		Image:           tfImage,
 		Version:         tfVersion,
 		Workdir:         options.TerraformDir,
-		MountDir:        td.MountDir,
+		MountDir:        td.Paths.MountDirPath,
 		TerraDaggerCMDs: tfCMDDagger,
+		ExportOptions:   &terradagger.ExportOptions{},
 	}
 
 	tdOptions.EnvVars = resolveEnvVarsByOptions(options)
-
 	c, err := td.Configure(tdOptions)
 
 	if err != nil {
@@ -156,5 +161,13 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 	}
 
 	// Run the container.
+	if applyOptions.PreserveTFState {
+		_, _ = td.RunWithExport(c, &terradagger.RunWithExportOptions{
+			TargetDirsFromContainer: []string{tfDefaultCacheDir},
+			TargetFilesFromContainer: []string{tfDefaultLockFileName, tfDefaultStateFileName,
+				tfDefaultStateBackupFileName},
+		}, tdOptions)
+	}
+
 	return td.Run(c)
 }
