@@ -16,8 +16,6 @@ type DirUtilities interface {
 
 type DirUtils struct{}
 
-var DirUtilsMock DirUtilities = &DirUtils{}
-
 func (du *DirUtils) GetHomeDir() string {
 	homeDir, _ := os.UserHomeDir()
 	return homeDir
@@ -48,7 +46,7 @@ func (du *DirUtils) IsValidDir(path string) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// The path does not exist.
-			return nil
+			return fmt.Errorf("path does not exist: %s. Failed with error: %w", absPath, err)
 		}
 		// There was some problem accessing the path.
 		return fmt.Errorf("failed to stat the path: %w", err)

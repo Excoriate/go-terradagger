@@ -97,6 +97,11 @@ func resolveRootDir(rootDir string) (RootDirConfig, error) {
 		return RootDirConfig{}, fmt.Errorf("the root directory %s is not a valid directory", rootDir)
 	}
 
+	dirUtils := utils.DirUtils{}
+	if !dirUtils.DirExist(rootDirAbsolute) {
+		return RootDirConfig{}, fmt.Errorf("the root directory %s does not exist", rootDirAbsolute)
+	}
+
 	return RootDirConfig{
 		RootDirRelative: rootDir,
 		RootDirAbsolute: rootDirAbsolute,

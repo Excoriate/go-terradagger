@@ -1,6 +1,6 @@
 module github.com/Excoriate/go-terradagger
 
-go 1.21.0
+go 1.21.5
 
 require (
 	dagger.io/dagger v0.9.3
