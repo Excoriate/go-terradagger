@@ -31,7 +31,7 @@ func getTerraformFileRelativePath(rootDir, terraformDir, file string) (string, e
 	}
 
 	// Check if the file exists.
-	if err := utils.FileExists(terraformFilePath); err != nil {
+	if err := utils.FileExistE(terraformFilePath); err != nil {
 		return "", fmt.Errorf("the terraform file %s does not exist", terraformFilePath)
 	}
 

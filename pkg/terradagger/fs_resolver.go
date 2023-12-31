@@ -38,7 +38,7 @@ func newDirResolverClient(td *TD) fsResolver {
 }
 
 func (fs *fsResolverClient) IsFileValidInHost(filePath string) error {
-	if err := utils.FileExists(filePath); err != nil {
+	if err := utils.FileExistE(filePath); err != nil {
 		return fmt.Errorf("failed to validate the file in the host, the file %s does not exist: %w", filePath, err)
 	}
 

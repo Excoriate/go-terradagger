@@ -53,7 +53,7 @@ func AreFilesToExcludeValid(mountPath string, filesToExclude []string) error {
 
 	for _, fileToExclude := range filesToExclude {
 		filePath := filepath.Join(mountPath, fileToExclude)
-		if err := utils.FileExists(filePath); err != nil {
+		if err := utils.FileExistE(filePath); err != nil {
 			return fmt.Errorf("the file %s to exclude does not exist", filePath)
 		}
 

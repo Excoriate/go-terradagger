@@ -47,7 +47,7 @@ type IsValidRelativeToBaseOptions struct {
 	RelativePath string
 }
 
-func FileExists(path string) error {
+func FileExistE(path string) error {
 	cleanPath := filepath.Clean(path)
 
 	info, err := os.Stat(cleanPath)
@@ -60,6 +60,51 @@ func FileExists(path string) error {
 
 	if info.IsDir() {
 		return fmt.Errorf("%s is a directory", cleanPath)
+	}
+
+	return nil
+}
+
+func FileExist(path string) bool {
+	cleanPath := filepath.Clean(path)
+
+	info, err := os.Stat(cleanPath)
+	if err != nil {
+		return false
+	}
+
+	return !info.IsDir()
+}
+
+func DeleteFileE(path string) error {
+	cleanPath := filepath.Clean(path)
+
+	if err := os.Remove(cleanPath); err != nil {
+		return fmt.Errorf("error deleting file %s: %v", cleanPath, err)
+	}
+
+	return nil
+}
+
+func DeleteDirE(path string) error {
+	cleanPath := filepath.Clean(path)
+
+	if err := os.RemoveAll(cleanPath); err != nil {
+		return fmt.Errorf("error deleting directory %s: %v", cleanPath, err)
+	}
+
+	return nil
+}
+
+func CreateFileE(path string) error {
+	cleanPath := filepath.Clean(path)
+
+	if err := os.MkdirAll(filepath.Dir(cleanPath), 0755); err != nil {
+		return fmt.Errorf("error creating directory %s: %v", filepath.Dir(cleanPath), err)
+	}
+
+	if _, err := os.Create(cleanPath); err != nil {
+		return fmt.Errorf("error creating file %s: %v", cleanPath, err)
 	}
 
 	return nil

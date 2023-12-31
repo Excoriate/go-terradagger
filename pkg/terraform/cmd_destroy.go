@@ -32,7 +32,7 @@ func (o *DestroyOptions) validateCMDOptions(terraformDir string) error {
 	for _, varFile := range o.VarFiles {
 		varFilePath := filepath.Join(terraformDir, varFile)
 
-		if err := utils.FileExists(varFilePath); err != nil {
+		if err := utils.FileExistE(varFilePath); err != nil {
 			return &erroer.ErrTerraformVarFileIsInvalid{
 				ErrWrapped:   err,
 				VarFilePath:  varFile,

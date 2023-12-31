@@ -3,6 +3,7 @@ package terradagger
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 
@@ -44,36 +45,10 @@ type Options struct {
 	EnvVars                      map[string]string
 }
 
-type RunOptions struct {
-	FilesToPassToContainer         []*FilesToPassToContainerOptions
-	DirsToPassToContainer          []*DirsToPassToContainerOptions
-	FilesToPassToHostFromContainer []*FilesToPassToHostFromContainerOptions
-	DirsToPassToHostFromContainer  []*DirsToPassToHostFromContainerOptions
-}
-
-type FilesToPassToContainerOptions struct {
-	FilePath     string
-	HostBasePath string
-}
-
-type DirsToPassToContainerOptions struct {
-	DirPath      string
-	HostBasePath string
-}
-
-type FilesToPassToHostFromContainerOptions struct {
-	FilePathInContainer string
-	DestinationHostPath string
-}
-
-type DirsToPassToHostFromContainerOptions struct {
-	DirPathInContainer  string
-	DestinationHostPath string
-}
-
 type Client interface {
 	CreateTerraDaggerContainer(options *CreateTerraDaggerContainerOptions) (*Container, error)
 	ConfigureTerraDaggerContainer(options *ConfigureTerraDaggerContainerOptions) (*Container, error)
+	ResolveRunOptions(instance *ClientInstance) *RunOptions
 	newDaggerBackendClient(enableStderrLog bool) error
 	Run(instance *ClientInstance, options *RunOptions) error
 }
@@ -227,88 +202,75 @@ func New(ctx context.Context, options *Options) (*TD, error) {
 	return td, nil
 }
 
+type RunOptions struct {
+	CopyFilesToContainer []string
+	CopyDirsToContainer  []string
+	CopyFilesToHost      []string
+	CopyDirsToHost       []string
+}
+
+func (td *TD) ResolveRunOptions(instance *ClientInstance) *RunOptions {
+	if instance == nil {
+		return nil
+	}
+
+	return &RunOptions{
+		CopyFilesToContainer: instance.Config.runtime.containerHostInterop.copyFilesToContainer,
+		CopyDirsToContainer:  instance.Config.runtime.containerHostInterop.copyDirsToContainer,
+		CopyFilesToHost:      instance.Config.runtime.containerHostInterop.copyFilesToHost,
+		CopyDirsToHost:       instance.Config.runtime.containerHostInterop.copyDirsToHost,
+	}
+}
+
 func (td *TD) Run(instance *ClientInstance, options *RunOptions) error {
 	if instance == nil {
 		return fmt.Errorf("failed to run the terradagger instance, the instance is nil")
 	}
 
-	workDir, err := instance.runtimeContainer.DaggerContainer.Workdir(td.Ctx)
-	if err != nil {
-		return err
+	// workDir, err := instance.runtimeContainer.DaggerContainer.Workdir(td.Ctx)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// entriesInMountPath, err := instance.runtimeContainer.DaggerContainer.Directory("/mnt/test-data/terraform/root-module-1").Entries(td.Ctx)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// td.Logger.Info("Entries in mount path", "entries", entriesInMountPath)
+
+	// td.Logger.Info("Workdir", "workdir", workDir)
+
+	if options == nil {
+		_, runErr := instance.runtimeContainer.DaggerContainer.Stdout(td.Ctx)
+		if runErr != nil {
+			return runErr
+		}
 	}
 
-	entriesInMountPath, err := instance.runtimeContainer.DaggerContainer.Directory("/mnt/test-data/terraform/root-module-1").Entries(td.Ctx)
-	if err != nil {
-		return err
+	if len(options.CopyFilesToHost) > 0 {
+		for _, file := range options.CopyFilesToHost {
+			fileName := filepath.Base(file)
+			fileInHostPath := filepath.Join(instance.Config.Paths.ExportPath, fileName)
+
+			if _, err := instance.runtimeContainer.DaggerContainer.File(file).
+				Export(td.Ctx, fileInHostPath); err != nil {
+				td.Logger.Error("Failed to export file", "file", file, "error", err)
+			}
+		}
 	}
 
-	td.Logger.Info("Entries in mount path", "entries", entriesInMountPath)
+	if len(options.CopyDirsToHost) > 0 {
+		for _, dir := range options.CopyDirsToHost {
+			dirName := filepath.Base(dir)
+			dirInHostPath := filepath.Join(instance.Config.Paths.ExportPath, dirName)
 
-	td.Logger.Info("Workdir", "workdir", workDir)
-
-	_, runErr := instance.runtimeContainer.DaggerContainer.Stdout(td.Ctx)
-	if runErr != nil {
-		return runErr
+			if _, err := instance.runtimeContainer.DaggerContainer.Directory(dir).
+				Export(td.Ctx, dirInHostPath); err != nil {
+				td.Logger.Error("Failed to export directory", "directory", dir, "error", err)
+			}
+		}
 	}
 
 	return nil
 }
-
-// type RunWithExportOptions struct {
-// 	TargetFilesFromContainer []string
-// 	TargetDirsFromContainer  []string
-// 	FailIfDirNotExist        bool
-// 	FailIfFileNotExist       bool
-// }
-//
-// func (td *TD) RunWithExport(runtime *dagger.Container, exportOptions *RunWithExportOptions, options *ClientOptions) (*OutputsCfg, error) {
-// 	outputs := &OutputsCfg{
-// 		DirsExported:       []*OutputDirsConfig{},
-// 		FilesExportedPaths: []*OutputFilesConfig{},
-// 	}
-// 	// var exportDestinationPathInHost := resolveTerraDaggerExportPath(td.Paths.TerraDagger, td.ID)
-//
-// 	if len(exportOptions.TargetDirsFromContainer) > 0 {
-// 		for _, dir := range exportOptions.TargetDirsFromContainer {
-// 			dirPathImport := filepath.Join(options.exportCfg.importFromContainerPath, dir)
-// 			dirPathExport := filepath.Join(options.exportCfg.exportToHostPath, filepath.Base(dir))
-//
-// 			td.Logger.Info("Exporting directory", "directory", dir, "dirPathImport", dirPathImport, "dirPathExport", dirPathExport)
-//
-// 			if _, err := runtime.Directory(dirPathImport).
-// 				Export(td.Ctx, dirPathExport); err != nil {
-// 				td.Logger.Error("Failed to export directory", "directory", dir, "error", err)
-// 				return nil, fmt.Errorf("failed to export directory %s: %w", dir, err)
-// 			}
-//
-// 			outputs.DirsExported = append(outputs.DirsExported, &OutputDirsConfig{
-// 				Dir:                dir,
-// 				DirPathInContainer: dirPathImport,
-// 				DirPathInHost:      filepath.Join(dirPathExport, filepath.Base(dir)),
-// 			})
-// 		}
-// 	}
-//
-// 	if len(exportOptions.TargetFilesFromContainer) > 0 {
-// 		for _, file := range exportOptions.TargetFilesFromContainer {
-// 			filePathImport := filepath.Join(options.exportCfg.importFromContainerPath, file)
-// 			filePathExport := filepath.Join(options.exportCfg.exportToHostPath, filepath.Base(file))
-//
-// 			td.Logger.Info("Exporting file", "file", file, "filePathImport", filePathImport, "filePathExport", filePathExport)
-//
-// 			if _, err := runtime.File(filePathImport).
-// 				Export(td.Ctx, filePathExport); err != nil {
-// 				td.Logger.Error("Failed to export file", "file", file, "error", err)
-// 				return nil, fmt.Errorf("failed to export file %s: %w", file, err)
-// 			}
-//
-// 			outputs.FilesExportedPaths = append(outputs.FilesExportedPaths, &OutputFilesConfig{
-// 				File:                file,
-// 				FilePathInContainer: filePathImport,
-// 				FilePathInHost:      filepath.Join(filePathExport, filepath.Base(file)),
-// 			})
-// 		}
-// 	}
-//
-// 	return outputs, nil
-// }
