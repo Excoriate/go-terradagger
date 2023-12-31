@@ -10,10 +10,10 @@ import (
 )
 
 type Options struct {
-	// TerraformRootDir is the root directory of the terraform code
-	TerraformRootDir string
-	// TerraformDir is the directory of the terraform code
-	TerraformDir string
+	// TerraformSRC is the root directory of the terraform code
+	TerraformSRC string
+	// TerraformModulePath is the directory of the terraform code
+	TerraformModulePath string
 	// TerraformVersion is the version of terraform to use
 	// By default, it'll use the latest version
 	TerraformVersion string
@@ -37,19 +37,19 @@ type CommandOptionsValidator interface {
 
 func (o *Options) validate() error {
 	dirUtils := utils.DirUtils{}
-	if o.TerraformDir == "" {
+	if o.TerraformModulePath == "" {
 		return &erroer.ErrTerraformOptionsAreInvalid{
 			Details: "the terraform directory is required, but it was not passed",
 		}
 	}
 
-	if o.TerraformRootDir == "" {
+	if o.TerraformSRC == "" {
 		return &erroer.ErrTerraformOptionsAreInvalid{
 			Details: "the terradagger root directory is required, but it was not passed",
 		}
 	}
 
-	terraformDir := filepath.Join(o.TerraformRootDir, o.TerraformDir)
+	terraformDir := filepath.Join(o.TerraformSRC, o.TerraformModulePath)
 
 	if err := dirUtils.IsValidDir(terraformDir); err != nil {
 		return &erroer.ErrTerraformOptionsAreInvalid{
@@ -67,9 +67,11 @@ func (o *Options) validate() error {
 	return nil
 }
 
-func setDefaultOptions(td *terradagger.Client, options *Options) {
+func setDefaultOptions(td *terradagger.TD, options *Options) {
 	if options == nil {
 		options = &Options{}
 	}
-	options.TerraformRootDir = td.Paths.RootDirRelative
+
+	options.TerraformSRC = td.Config.TerraDagger.Paths.Workspace.SRC
+	options.TerraformVersion = "1.6.1" // FIXME: Make these defaults configurable.
 }

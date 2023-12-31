@@ -22,7 +22,7 @@ func (o *InitOptions) validateCMDOptions(options *Options) error {
 		return nil
 	}
 
-	_, err := getTerraformFileRelativePath(options.TerraformRootDir, options.TerraformDir, o.BackendConfigFile)
+	_, err := getTerraformFileRelativePath(options.TerraformSRC, options.TerraformModulePath, o.BackendConfigFile)
 	if err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
@@ -34,7 +34,7 @@ func (o *InitOptions) validateCMDOptions(options *Options) error {
 }
 
 // Init Configures a 'terraform init' command and runs it.
-func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) error {
+func Init(td *terradagger.TD, options *Options, initOptions *InitOptions) error {
 	setDefaultOptions(td, options)
 
 	if initOptions == nil {
@@ -97,25 +97,44 @@ func Init(td *terradagger.Client, options *Options, initOptions *InitOptions) er
 	tfVersion := resolveTerraformVersion(options)
 
 	// Configuring the options.
-	tdOptions := &terradagger.ClientConfigOptions{
-		Image:           tfImage,
-		Version:         tfVersion,
-		Workdir:         options.TerraformDir,
-		MountDir:        td.Paths.MountDirPath,
+	tdOptions := &terradagger.ClientOptions{
+		ContainerOptions: &terradagger.InstanceContainerOptions{
+			Image:   tfImage,
+			Version: tfVersion,
+		},
+		WorkDirPath:     options.TerraformModulePath,
 		TerraDaggerCMDs: tfCMDDagger,
+		WorkDirPreRequisites: &terradagger.Requisites{
+			RequiredFileExtensions: []string{".tf"},
+		},
 	}
 
-	tdOptions.EnvVars = resolveEnvVarsByOptions(options)
-
-	c, err := td.Configure(tdOptions)
+	i := terradagger.NewInstance(td)
+	err := i.Validate(tdOptions)
 
 	if err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
-			Details:    "the terraform init command could not be configured",
+			Details:    "the terraform init command could not be validated",
 		}
 	}
 
-	// Run the container.
-	return td.Run(c)
+	cfg, err := i.Configure(tdOptions)
+	if err != nil {
+		return err
+	}
+
+	clientInstance, err := i.PrepareInstance(cfg)
+	if err != nil {
+		return err
+	}
+
+	if err := td.Run(clientInstance, nil); err != nil {
+		return &erroer.ErrTerraformInitFailedToStart{
+			ErrWrapped: err,
+			Details:    "the terraform init command failed to run",
+		}
+	}
+
+	return nil
 }

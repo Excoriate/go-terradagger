@@ -37,7 +37,7 @@ func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
 	for _, varFile := range o.VarFiles {
 		varFilePath := filepath.Join(terraformDir, varFile)
 
-		if err := utils.FileExist(varFilePath); err != nil {
+		if err := utils.FileExists(varFilePath); err != nil {
 			return &erroer.ErrTerraformVarFileIsInvalid{
 				ErrWrapped:   err,
 				VarFilePath:  varFile,
@@ -63,7 +63,7 @@ func (o *ApplyOptions) validateCMDOptions(terraformDir string) error {
 	return nil
 }
 
-func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions) error {
+func Apply(td *terradagger.TD, options *Options, applyOptions *ApplyOptions) error {
 	setDefaultOptions(td, options)
 
 	if applyOptions == nil {
@@ -77,7 +77,7 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 		}
 	}
 
-	if err := applyOptions.validateCMDOptions(options.TerraformDir); err != nil {
+	if err := applyOptions.validateCMDOptions(options.TerraformModulePath); err != nil {
 		return &erroer.ErrTerraformApplyFailedToStart{
 			ErrWrapped: err,
 			Details:    "the apply options passed to the terraform command are invalid",
@@ -141,32 +141,74 @@ func Apply(td *terradagger.Client, options *Options, applyOptions *ApplyOptions)
 	tfVersion := resolveTerraformVersion(options)
 
 	// Configuring the options.
-	tdOptions := &terradagger.ClientConfigOptions{
-		Image:           tfImage,
-		Version:         tfVersion,
-		Workdir:         options.TerraformDir,
-		MountDir:        td.Paths.MountDirPath,
+	tdOptions := &terradagger.ClientOptions{
+		ContainerOptions: &terradagger.InstanceContainerOptions{
+			Image:   tfImage,
+			Version: tfVersion,
+		},
+		WorkDirPath:     options.TerraformModulePath,
 		TerraDaggerCMDs: tfCMDDagger,
 	}
 
-	tdOptions.EnvVars = resolveEnvVarsByOptions(options)
-	c, err := td.Configure(tdOptions)
+	i := terradagger.NewInstance(td)
+	err := i.Validate(tdOptions)
 
 	if err != nil {
-		return &erroer.ErrTerraformApplyFailedToStart{
+		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
-			Details:    "the terraform apply command failed to start",
+			Details:    "the terraform init command could not be validated",
 		}
 	}
 
-	// Run the container.
-	if applyOptions.PreserveTFState {
-		_, _ = td.RunWithExport(c, &terradagger.RunWithExportOptions{
-			TargetDirsFromContainer: []string{tfDefaultCacheDir},
-			TargetFilesFromContainer: []string{tfDefaultLockFileName, tfDefaultStateFileName,
-				tfDefaultStateBackupFileName},
-		}, tdOptions)
+	cfg, err := i.Configure(tdOptions)
+	if err != nil {
+		return err
 	}
 
-	return td.Run(c)
+	clientInstance, err := i.PrepareInstance(cfg)
+	if err != nil {
+		return err
+	}
+
+	if err := td.Run(clientInstance, nil); err != nil {
+		return &erroer.ErrTerraformInitFailedToStart{
+			ErrWrapped: err,
+			Details:    "the terraform init command failed to run",
+		}
+	}
+
+	return nil
+
+	// tfImage := resolveTerraformImage(options)
+	// tfVersion := resolveTerraformVersion(options)
+	//
+	// // Configuring the options.
+	// tdOptions := &terradagger.ClientOptions{
+	// 	Image:           tfImage,
+	// 	Version:         tfVersion,
+	// 	WorkDirPath:     options.TerraformModulePath,
+	// 	MountPath:       td.Paths.MountDirPath,
+	// 	TerraDaggerCMDs: tfCMDDagger,
+	// }
+	//
+	// tdOptions.EnvVars = resolveEnvVarsByOptions(options)
+	// c, err := td.SetUp(tdOptions)
+	//
+	// if err != nil {
+	// 	return &erroer.ErrTerraformApplyFailedToStart{
+	// 		ErrWrapped: err,
+	// 		Details:    "the terraform apply command failed to start",
+	// 	}
+	// }
+	//
+	// // Run the container.
+	// if applyOptions.PreserveTFState {
+	// 	_, _ = td.RunWithExport(c, &terradagger.RunWithExportOptions{
+	// 		TargetDirsFromContainer: []string{tfDefaultCacheDir},
+	// 		TargetFilesFromContainer: []string{tfDefaultLockFileName, tfDefaultStateFileName,
+	// 			tfDefaultStateBackupFileName},
+	// 	}, tdOptions)
+	// }
+	//
+	// return td.Run(c)
 }

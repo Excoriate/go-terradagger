@@ -11,14 +11,6 @@ func resolveEnvVarsByOptions(options *Options) map[string]string {
 		return envVars
 	}
 
-	// If we should use all environment variables from the host
-	if options.AutoInjectEnvVarsFromHost {
-		hostEnvVars := env.GetAllFromHost()
-		if hostEnvVars != nil {
-			envVars = hostEnvVars
-		}
-	}
-
 	// If we should auto-inject TF_VAR_ prefixed environment variables
 	if options.AutoInjectTFVAREnvVars {
 		tfEnvVars, err := env.GetAllEnvVarsWithPrefix("TF_VAR_")

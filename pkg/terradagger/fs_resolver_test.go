@@ -9,53 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// func TestResolveMountDirPath(t *testing.T) {
-// 	mockCtrl := gomock.NewController(t)
-// 	defer mockCtrl.Finish()
-// 	// Override the global Util variable with our mock
-//
-// 	mockDirUtils := mocks.NewMockDirUtilities(mockCtrl)
-//
-// 	cwd := "user/this/is/cwd/result"
-//
-// 	testCases := []struct {
-// 		name          string
-// 		mountDirPath  string
-// 		expectedPath  string
-// 		expectedError error
-// 	}{
-// 		{
-// 			// mountDirPath is empty, so it'll return the current directory
-// 			name:          "mountDirPath is empty",
-// 			mountDirPath:  "",
-// 			expectedPath:  filepath.Join(cwd, "."),
-// 			expectedError: nil,
-// 		},
-// 		// mountDirPath is ".", so it'll return the current directory
-// 		{
-// 			name:          "mountDirPath is .",
-// 			mountDirPath:  ".",
-// 			expectedPath:  filepath.Join(cwd, "."),
-// 			expectedError: nil,
-// 		},
-// 	}
-//
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			mockDirUtils.EXPECT().GetCurrentDir().Return(cwd).AnyTimes()
-// 			mockDirUtils.EXPECT().IsValidDir(gomock.Any()).Return(tc.expectedError).AnyTimes()
-//
-// 			path, err := resolveMountDirPath(tc.mountDirPath)
-//
-// 			// assert.Equal(t, tc.expectedPath, path)
-// 			// TODO: Refactor the resolveMountDirPath to accept an interface,
-// 			//  so it'll use the cwd instead of the actual current directory.
-// 			assert.NotEmpty(t, path)
-// 			assert.Equal(t, tc.expectedError, err)
-// 		})
-// 	}
-// }
-
 func TestResolveTerraDaggerPath(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -97,14 +50,14 @@ func TestResolveTerraDaggerPath(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				if tt.rootDir == "" {
-					tt.rootDir = defaultRootDirRelative
+					tt.rootDir = config.defaultSRCPath
 				}
 				expectedPath, _ := filepath.Abs(tt.rootDir)
-				expectedPath = filepath.Join(expectedPath, terraDaggerDir)
+				expectedPath = filepath.Join(expectedPath, config.terraDaggerDir)
 				assert.Equal(t, expectedPath, path)
 
 				// The generated terraDaggerPath should have the terraDaggerDir
-				assert.Contains(t, path, terraDaggerDir)
+				assert.Contains(t, path, config.terraDaggerDir)
 			}
 		})
 	}
@@ -113,8 +66,6 @@ func TestResolveTerraDaggerPath(t *testing.T) {
 func TestResolveMountDirPath(t *testing.T) {
 	dirUtils := utils.DirUtils{}
 	currentDir := dirUtils.GetCurrentDir()
-
-	// Create an invalid directory from a valid one
 
 	tests := []struct {
 		name          string
@@ -192,13 +143,13 @@ func TestResolveRootDir(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rootDirConfig, err := resolveRootDir(tt.rootDir)
+			rootDirConfig, err := resolveSRC(tt.rootDir)
 			if tt.expectedError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 				if tt.rootDir == "" {
-					tt.rootDir = defaultRootDirRelative
+					tt.rootDir = config.defaultSRCPath
 				}
 				expectedPath, _ := filepath.Abs(tt.rootDir)
 				assert.Equal(t, expectedPath, rootDirConfig.RootDirAbsolute)
@@ -216,13 +167,13 @@ func TestResolveTerraDaggerExportPath(t *testing.T) {
 		expectedError   bool
 	}{
 		{
-			name:            "terraDagger path is 'terraDagger' and the ID is valid",
+			name:            "TerraDagger path is 'TerraDagger' and the ID is valid",
 			terraDaggerPath: "asda",
 			terraDaggerID:   "some-valid-id",
 			expectedError:   false,
 		},
 		{
-			name:            "terraDagger path is 'terraDagger' and the ID is valid",
+			name:            "TerraDagger path is 'TerraDagger' and the ID is valid",
 			terraDaggerPath: ".terradagger",
 			terraDaggerID:   "some-valid-id-again",
 			expectedError:   false,
@@ -233,7 +184,7 @@ func TestResolveTerraDaggerExportPath(t *testing.T) {
 		path := resolveTerraDaggerExportPath(tt.terraDaggerPath, tt.terraDaggerID)
 		assert.NotEmptyf(t, path, "expected path to be non-empty")
 		assert.Contains(t, path, tt.terraDaggerID)
-		assert.Contains(t, path, terraDaggerExportDir)
-		assert.Equal(t, path[len(path)-len(terraDaggerExportDir):], terraDaggerExportDir)
+		assert.Contains(t, path, config.terraDaggerExportDir)
+		assert.Equal(t, path[len(path)-len(config.terraDaggerExportDir):], config.terraDaggerExportDir)
 	}
 }

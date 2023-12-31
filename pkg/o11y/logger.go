@@ -57,6 +57,13 @@ func (l *LogImpl) Debug(msg string, args ...any) {
 	l.impl.Debug(msg, args...)
 }
 
+func DefaultLogger() LoggerInterface {
+	jsonHandler := slog.NewJSONHandler(os.Stderr, nil)
+	return &LogImpl{
+		impl: slog.New(jsonHandler),
+	}
+}
+
 func NewLogger(options LoggerOptions) LoggerInterface {
 	var logger *slog.Logger
 	var jsonHandler *slog.JSONHandler

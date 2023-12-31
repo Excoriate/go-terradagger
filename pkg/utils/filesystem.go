@@ -47,23 +47,64 @@ type IsValidRelativeToBaseOptions struct {
 	RelativePath string
 }
 
-func FileExist(path string) error {
-	info, err := os.Stat(path)
+func FileExists(path string) error {
+	cleanPath := filepath.Clean(path)
+
+	info, err := os.Stat(cleanPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("file %s does not exist", path)
+			return fmt.Errorf("file %s does not exist", cleanPath)
 		}
+		return fmt.Errorf("error checking the path %s: %v", cleanPath, err)
+	}
+
+	if info.IsDir() {
+		return fmt.Errorf("%s is a directory", cleanPath)
+	}
+
+	return nil
+}
+
+func IsAFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return !info.IsDir()
+}
+
+func IsAFileE(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
 		return fmt.Errorf("error checking the path %s: %v", path, err)
 	}
+
 	if info.IsDir() {
 		return fmt.Errorf("%s is a directory", path)
+	}
+
+	return nil
+}
+
+func IsRelativeE(path string) error {
+	if filepath.IsAbs(path) {
+		return fmt.Errorf("path %s is not relative", path)
 	}
 	return nil
 }
 
-func IsRelative(path string) error {
-	if filepath.IsAbs(path) {
-		return fmt.Errorf("path %s is not relative", path)
+func IsRelative(path string) bool {
+	return filepath.IsAbs(path)
+}
+
+func IsAbsolute(path string) bool {
+	return filepath.IsAbs(path)
+}
+
+func IsAbsoluteE(path string) error {
+	if !filepath.IsAbs(path) {
+		return fmt.Errorf("path %s is not absolute", path)
 	}
 	return nil
 }

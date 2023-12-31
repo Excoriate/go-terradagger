@@ -32,7 +32,7 @@ func (o *DestroyOptions) validateCMDOptions(terraformDir string) error {
 	for _, varFile := range o.VarFiles {
 		varFilePath := filepath.Join(terraformDir, varFile)
 
-		if err := utils.FileExist(varFilePath); err != nil {
+		if err := utils.FileExists(varFilePath); err != nil {
 			return &erroer.ErrTerraformVarFileIsInvalid{
 				ErrWrapped:   err,
 				VarFilePath:  varFile,
@@ -58,7 +58,7 @@ func (o *DestroyOptions) validateCMDOptions(terraformDir string) error {
 	return nil
 }
 
-func Destroy(td *terradagger.Client, options *Options, destroyOptions *DestroyOptions) error {
+func Destroy(td *terradagger.TD, options *Options, destroyOptions *DestroyOptions) error {
 	setDefaultOptions(td, options)
 
 	if destroyOptions == nil {
@@ -72,7 +72,7 @@ func Destroy(td *terradagger.Client, options *Options, destroyOptions *DestroyOp
 		}
 	}
 
-	if err := destroyOptions.validateCMDOptions(options.TerraformDir); err != nil {
+	if err := destroyOptions.validateCMDOptions(options.TerraformModulePath); err != nil {
 		return &erroer.ErrTerraformDestroyFailedToStart{
 			ErrWrapped: err,
 			Details:    "the destroy options passed to the terraform destroy command are invalid",
@@ -136,25 +136,41 @@ func Destroy(td *terradagger.Client, options *Options, destroyOptions *DestroyOp
 	tfVersion := resolveTerraformVersion(options)
 
 	// Configuring the options.
-	tdOptions := &terradagger.ClientConfigOptions{
-		Image:           tfImage,
-		Version:         tfVersion,
-		Workdir:         options.TerraformDir,
-		MountDir:        td.Paths.MountDirPath,
+	tdOptions := &terradagger.ClientOptions{
+		ContainerOptions: &terradagger.InstanceContainerOptions{
+			Image:   tfImage,
+			Version: tfVersion,
+		},
+		WorkDirPath:     options.TerraformModulePath,
 		TerraDaggerCMDs: tfCMDDagger,
 	}
 
-	tdOptions.EnvVars = resolveEnvVarsByOptions(options)
-
-	c, err := td.Configure(tdOptions)
+	i := terradagger.NewInstance(td)
+	err := i.Validate(tdOptions)
 
 	if err != nil {
-		return &erroer.ErrTerraformDestroyFailedToStart{
+		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
-			Details:    "the terraform destroy command failed to start",
+			Details:    "the terraform destroy command could not be validated",
 		}
 	}
 
-	// Run the container.
-	return td.Run(c)
+	cfg, err := i.Configure(tdOptions)
+	if err != nil {
+		return err
+	}
+
+	clientInstance, err := i.PrepareInstance(cfg)
+	if err != nil {
+		return err
+	}
+
+	if err := td.Run(clientInstance, nil); err != nil {
+		return &erroer.ErrTerraformInitFailedToStart{
+			ErrWrapped: err,
+			Details:    "the terraform destroy command failed to run",
+		}
+	}
+
+	return nil
 }

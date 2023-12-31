@@ -36,11 +36,11 @@ var Cmd = &cobra.Command{
 
 		ux.Title.ShowTitle("TerraDagger CLI")
 
-		td, err := terradagger.New(ctx, &terradagger.ClientOptions{
-			RootDir: "../",
+		td, err := terradagger.New(ctx, &terradagger.Options{
+			Workspace: "../",
 		})
 
-		defer td.DaggerClient.Close()
+		defer td.DaggerBackend.Close()
 
 		if err != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
@@ -51,7 +51,7 @@ var Cmd = &cobra.Command{
 		}
 
 		terraformOptions := &terraform.Options{
-			TerraformDir: "test-data/terraform/root-module-1",
+			TerraformModulePath: "test-data/terraform/root-module-1",
 		}
 
 		_ = terraform.Init(td, terraformOptions, nil)

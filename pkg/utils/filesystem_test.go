@@ -46,10 +46,10 @@ func TestFindGitRepoDir(t *testing.T) {
 
 func TestIsRelativePath(t *testing.T) {
 	t.Run("relative path", func(t *testing.T) {
-		assert.NoError(t, IsRelative("relative/path"))
+		assert.NoError(t, IsRelativeE("relative/path"))
 	})
 
 	t.Run("absolute path", func(t *testing.T) {
-		assert.Error(t, IsRelative("/absolute/path"))
+		assert.Error(t, IsRelativeE("/absolute/path"))
 	})
 }
