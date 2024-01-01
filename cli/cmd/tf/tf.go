@@ -54,23 +54,37 @@ var Cmd = &cobra.Command{
 			TerraformModulePath: "test-data/terraform/root-module-1",
 		}
 
-		_ = terraform.Init(td, terraformOptions, nil)
-		_ = terraform.Plan(td, terraformOptions, &terraform.PlanOptions{
+		initErr := terraform.Init(td, terraformOptions, nil)
+		if initErr != nil {
+			ux.Msg.ShowError(tui.MessageOptions{
+				Message: "Unable to run terraform init",
+				Error:   initErr,
+			})
+		}
+		planErr := terraform.Plan(td, terraformOptions, &terraform.PlanOptions{
 			Vars: map[string]interface{}{
 				"is_enabled": true,
 			},
 		})
-		_ = terraform.Apply(td, terraformOptions, &terraform.ApplyOptions{
-			Vars: map[string]interface{}{
-				"is_enabled": true,
-			},
-			PreserveTFState: true, // Preserve the state file.
-		})
-		_ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
-			Vars: map[string]interface{}{
-				"is_enabled": true,
-			},
-		})
+
+		if planErr != nil {
+			ux.Msg.ShowError(tui.MessageOptions{
+				Message: "Unable to run terraform plan",
+				Error:   planErr,
+			})
+		}
+
+		// _ = terraform.Apply(td, terraformOptions, &terraform.ApplyOptions{
+		// 	Vars: map[string]interface{}{
+		// 		"is_enabled": true,
+		// 	},
+		// 	PreserveTFState: true, // Preserve the state file.
+		// })
+		// _ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
+		// 	Vars: map[string]interface{}{
+		// 		"is_enabled": true,
+		// 	},
+		// })
 	},
 }
 

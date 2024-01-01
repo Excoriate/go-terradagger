@@ -79,7 +79,7 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 
 	td.Logger.Info("All the options are valid, and the terraform plan command can be started.")
 
-	tfInitCMD := initCMDDefault()
+	// tfInitCMD := initCMDDefault()
 
 	// Setting the required terraform plan args, based on options.
 	tfPlanArgs := &commands.CmdArgs{}
@@ -123,7 +123,7 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 
 	// Add the necessary commands to the list of commands to run.
 	cmds := []commands.TerraDaggerCMD{
-		*tfInitCMD,
+		// *tfInitCMD,
 		*tfPlanCMD,
 	}
 
@@ -140,6 +140,12 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 		},
 		WorkDirPath:     options.TerraformModulePath,
 		TerraDaggerCMDs: tfCMDDagger,
+		WorkDirPreRequisites: &terradagger.Requisites{
+			RequiredFileExtensions: []string{".tf"},
+		},
+		ImportToContainer: &terradagger.ImportToContainerOptions{
+			DirNames: []string{".terraform"}, // From the previous terraform init command
+		},
 	}
 
 	i := terradagger.NewInstance(td)
@@ -162,10 +168,10 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 		return err
 	}
 
-	if err := td.Run(clientInstance, nil); err != nil {
+	if err := td.Run(clientInstance, td.ResolveRunOptions(clientInstance)); err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
-			Details:    "the terraform init command failed to run",
+			Details:    "the terraform plan command failed to run",
 		}
 	}
 

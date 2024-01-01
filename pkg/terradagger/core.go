@@ -246,6 +246,8 @@ func (td *TD) Run(instance *ClientInstance, options *RunOptions) error {
 		if runErr != nil {
 			return runErr
 		}
+
+		return nil
 	}
 
 	if len(options.CopyFilesToHost) > 0 {
@@ -268,6 +270,19 @@ func (td *TD) Run(instance *ClientInstance, options *RunOptions) error {
 			if _, err := instance.runtimeContainer.DaggerContainer.Directory(dir).
 				Export(td.Ctx, dirInHostPath); err != nil {
 				td.Logger.Error("Failed to export directory", "directory", dir, "error", err)
+			}
+		}
+	}
+
+	if len(options.CopyDirsToContainer) > 0 {
+		for _, dir := range options.CopyDirsToContainer {
+			dirName := filepath.Base(dir)
+			dirInContainerPath := filepath.Join(instance.Config.Paths.WorkDirPathDagger, dirName)
+			dirAsDaggerFormat := td.DaggerBackend.Host().Directory(dir)
+
+			_, err := instance.runtimeContainer.DaggerContainer.WithDirectory(dirInContainerPath, dirAsDaggerFormat).Stdout(td.Ctx)
+			if err != nil {
+				return err
 			}
 		}
 	}

@@ -34,7 +34,7 @@ type ClientOptions struct {
 	// ExportFromContainer are the options for the files and directories that should be required from the terradagger.
 	ExportFromContainer *ExportFromContainerOptions
 	// ImportToContainer are the options for the files and directories that should be required from the terradagger.
-	ImportToContainer *ImportFromContainerOptions
+	ImportToContainer *ImportToContainerOptions
 }
 
 type Requisites struct {
@@ -43,7 +43,7 @@ type Requisites struct {
 	RequiredFileExtensions []string
 }
 
-type ImportFromContainerOptions struct {
+type ImportToContainerOptions struct {
 	LookupFromWorkDir bool // It'll look for the files in the work dir, and not in the import dir.
 	FileNames         []string
 	DirNames          []string
@@ -110,10 +110,10 @@ type InstancePaths struct {
 	// WorkDirPath is the path of the work directory in the runtime,
 	// formatted as: /mnt/MountPath/WorkDirPath
 	WorkDirPath string
-	// WorkDirPathAbsolute is the absolute path of the work directory in the runtime,
 	// WorkDirPathDagger is the path of the work directory in the runtime, which includes
 	// the dagger mount prefix, formatted as: /mnt/MountPath/WorkDirPath
-	WorkDirPathDagger   string
+	WorkDirPathDagger string
+	// WorkDirPathAbsolute is the absolute path of the work directory in the runtime,
 	WorkDirPathAbsolute string
 	// mountPrefix is the prefix of the mount directory in the runtime,
 	mountPrefix string
@@ -159,43 +159,44 @@ func NewInstance(td *TD) Instance {
 	}
 }
 
+type ClientInstanceValidationError struct {
+	ErrWrapped error
+	Details    string
+}
+
+const clientInstanceValidationErrPrefix = "the terradagger instance failed to be validated"
+
+func (e *ClientInstanceValidationError) Error() string {
+	if e.ErrWrapped == nil {
+		return fmt.Sprintf("%s: %s", clientInstanceValidationErrPrefix, e.Details)
+	}
+
+	return fmt.Sprintf("%s: %s: %s", clientInstanceValidationErrPrefix, e.Details, e.ErrWrapped.Error())
+}
+
 func (i *InstanceImpl) Validate(options *ClientOptions) error {
 	if options == nil {
 		return fmt.Errorf("failed to Validate the terradagger instance, the options are nil")
 	}
 
-	cv := newContainerValidator(i.td.Logger)
+	instanceValidator := newClientInstanceValidator(i)
 
-	if err := cv.validate(&CreateNewContainerOptions{
-		Image:   options.ContainerOptions.Image,
-		Version: options.ContainerOptions.Version,
-	}); err != nil {
-		return fmt.Errorf("failed to Validate the terradagger instance, the runtime options are nil")
+	if err := instanceValidator.IsEnvVarOptionsValid(options.EnvVarOptions); err != nil {
+		return &ClientInstanceValidationError{
+			ErrWrapped: err,
+			Details:    "the env var options are invalid",
+		}
+	}
+
+	if err := instanceValidator.IsContainerOptionsValid(options.ContainerOptions); err != nil {
+		return &ClientInstanceValidationError{
+			ErrWrapped: err,
+			Details:    "the container options are invalid",
+		}
 	}
 
 	if len(options.TerraDaggerCMDs) == 0 {
 		return fmt.Errorf("failed to Validate the terradagger instance, the terradagger commands are empty")
-	}
-
-	if options.EnvVarOptions != nil {
-		if len(options.EnvVarOptions.EnvVars) == 0 {
-			i.td.Logger.Info("The env vars are empty, so this 'terraDagger' instance will not have custom env vars")
-		}
-
-		if len(options.EnvVarOptions.CopyEnvVarsFromHostByKeys) > 0 && options.EnvVarOptions.MirrorEnvVarsFromHost {
-			return fmt.Errorf("failed to Validate the terradagger instance, the env vars options are invalid, " +
-				"the 'CopyEnvVarsFromHostByKeys' and 'MirrorEnvVarsFromHost' options cannot be used together")
-		}
-
-		if len(options.EnvVarOptions.CopyEnvVarsFromHostByKeys) > 0 {
-			for _, key := range options.EnvVarOptions.CopyEnvVarsFromHostByKeys {
-				_, err := env.GetEnvVarByKey(key, true)
-				if err != nil {
-					return fmt.Errorf("failed to Validate the terradagger instance, the env vars options are invalid, "+
-						"the env var with key %s does not exist", key)
-				}
-			}
-		}
 	}
 
 	mountPath := i.td.Config.TerraDagger.Paths.Workspace.SRC
@@ -241,13 +242,52 @@ func (i *InstanceImpl) Validate(options *ClientOptions) error {
 
 		if len(options.ImportToContainer.DirNames) > 0 {
 			for _, dir := range options.ImportToContainer.DirNames {
-				var dirPathInHost string
 				if options.ImportToContainer.LookupFromWorkDir {
-					dirPathInHost = filepath.Join(mountPathAbs, options.WorkDirPath, dir)
-				} else {
-					dirPathInHost = filepath.Join(mountPathAbs, dir)
+					dirPathInHost := filepath.Join(mountPathAbs, options.WorkDirPath, dir)
+					if err := config.IsAValidTerraDaggerDirAbsolute(dirPathInHost); err != nil {
+						return fmt.Errorf("failed to Configure the terradagger instance, the dir %s is invalid: %w", dir, err)
+					}
+				}
+				// The validation when it's looking into the default .terradagger/ID/export directory
+				// cannot be perfomed here, since the .terradagger path isn't resolved yet.
+			}
+		}
+	}
+
+	if options.WorkDirPreRequisites != nil {
+		if len(options.WorkDirPreRequisites.RequiredFiles) > 0 {
+			workDirPathAbs := filepath.Join(mountPathAbs, options.WorkDirPath)
+			for _, file := range options.WorkDirPreRequisites.RequiredFiles {
+				filePathInHost := filepath.Join(workDirPathAbs, file)
+				if err := i.td.fsResolverClient.IsFileValidInHost(filePathInHost); err != nil {
+					return fmt.Errorf("failed to Configure the terradagger instance, the file %s is invalid: %w", file, err)
+				}
+			}
+		}
+
+		if len(options.WorkDirPreRequisites.RequiredFileExtensions) > 0 {
+			workDirPathAbs := filepath.Join(mountPathAbs, options.WorkDirPath)
+			for _, extension := range options.WorkDirPreRequisites.RequiredFileExtensions {
+				files, err := utils.GetFilesByExtension(workDirPathAbs, extension)
+				if err != nil {
+					return fmt.Errorf("failed to Configure the terradagger instance, the file extension %s is invalid: %w", extension, err)
 				}
 
+				if len(files) == 0 {
+					i.td.Logger.Error(fmt.Sprintf("no files found in path %s with extension %s", workDirPathAbs, extension))
+					return fmt.Errorf("failed to Configure the terradagger instance, the file extension %s is invalid, no files found", extension)
+				}
+
+				for _, file := range files {
+					i.td.Logger.Info(fmt.Sprintf("Found file with extension %s: %s", extension, file))
+				}
+			}
+		}
+
+		if len(options.WorkDirPreRequisites.RequiredDirs) > 0 {
+			workDirPathAbs := filepath.Join(mountPathAbs, options.WorkDirPath)
+			for _, dir := range options.WorkDirPreRequisites.RequiredDirs {
+				dirPathInHost := filepath.Join(workDirPathAbs, dir)
 				if err := config.IsAValidTerraDaggerDirAbsolute(dirPathInHost); err != nil {
 					return fmt.Errorf("failed to Configure the terradagger instance, the dir %s is invalid: %w", dir, err)
 				}
@@ -311,7 +351,11 @@ func (i *InstanceImpl) Configure(options *ClientOptions) (*InstanceConfig, error
 	// 3. Resolve the export path
 	auxPaths := i.td.fsResolverClient.ResolveAuxPaths(instanceCfg.Paths.TerraDagger)
 	instanceCfg.Paths.ExportPath = auxPaths.ExportPath
-	instanceCfg.Paths.ImportPath = auxPaths.ImportPath
+	// instanceCfg.Paths.ImportPath = auxPaths.ImportPath
+	// When importing, it's picking up the files and directories from the directories
+	// that the target files/dirs where originally copied to, so it's not necessary to
+	// resolve the import path.
+	instanceCfg.Paths.ImportPath = auxPaths.ExportPath
 	instanceCfg.Paths.CachePath = auxPaths.CachePath
 
 	// 4. Resolve the mount path. The mount path is inherited from the
@@ -438,6 +482,11 @@ func (i *InstanceImpl) Configure(options *ClientOptions) (*InstanceConfig, error
 					dirInHostPath = filepath.Join(instanceCfg.Paths.WorkDirPathAbsolute, dir)
 				} else {
 					dirInHostPath = filepath.Join(instanceCfg.Paths.ImportPath, dir)
+				}
+
+				// Check if the dirInHostPath resolved exist, and it's valid.
+				if err := config.IsAValidTerraDaggerDirAbsolute(dirInHostPath); err != nil {
+					return nil, fmt.Errorf("failed to Configure the terradagger instance, the dir %s is invalid: %w", dir, err)
 				}
 
 				instanceCfg.runtime.containerHostInterop.copyDirsToContainer = append(instanceCfg.runtime.containerHostInterop.copyDirsToContainer, dirInHostPath)

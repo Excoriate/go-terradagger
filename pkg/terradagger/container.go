@@ -42,6 +42,10 @@ func (cv *ContainerValidatorImpl) validate(options *CreateNewContainerOptions) e
 		return fmt.Errorf("the image while creating a new runtime cannot include the version")
 	}
 
+	if strings.Contains(options.Image, ":") {
+		return fmt.Errorf("the image while creating a new runtime cannot include the version")
+	}
+
 	return nil
 }
 

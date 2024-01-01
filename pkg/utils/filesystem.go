@@ -153,3 +153,20 @@ func IsAbsoluteE(path string) error {
 	}
 	return nil
 }
+
+func GetFilesByExtension(path, extension string) ([]string, error) {
+	var files []string
+
+	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == extension {
+			files = append(files, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error getting files by extension %s in path %s: %v", extension, path, err)
+	}
+
+	return files, nil
+}
