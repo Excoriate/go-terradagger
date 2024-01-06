@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/Excoriate/go-terradagger/pkg/utils"
+
 	"github.com/Excoriate/go-terradagger/pkg/commands"
 
 	"github.com/Excoriate/go-terradagger/pkg/config"
@@ -17,6 +19,7 @@ import (
 )
 
 type TD struct {
+	ID string
 	// Configuration interfaces
 	daggerConfigClient      config.DaggerBackendConfig
 	terraDaggerConfigClient config.TerraDaggerConfig
@@ -45,8 +48,22 @@ type Options struct {
 	EnvVars                      map[string]string
 }
 
-type Client interface {
+type OverrideTerraDaggerFileOptions struct {
+	FileName             string
+	TerraDaggerID        string
+	TerraDaggerConfigDir string
+}
+
+type OverrideTerraDaggerDirOptions struct {
+	DirName              string
+	TerraDaggerID        string
+	TerraDaggerConfigDir string
+}
+
+type Core interface {
 	CreateTerraDaggerContainer(options *CreateTerraDaggerContainerOptions) (*Container, error)
+	OverrideTerraDaggerFile(options *OverrideTerraDaggerFileOptions) error
+	OverrideTerraDaggerDir(options *OverrideTerraDaggerDirOptions) error
 	ConfigureTerraDaggerContainer(options *ConfigureTerraDaggerContainerOptions) (*Container, error)
 	ResolveRunOptions(instance *ClientInstance) *RunOptions
 	newDaggerBackendClient(enableStderrLog bool) error
@@ -122,6 +139,76 @@ func (td *TD) ConfigureTerraDaggerContainer(options *ConfigureTerraDaggerContain
 	return options.Container, nil
 }
 
+func (td *TD) OverrideTerraDaggerFile(options *OverrideTerraDaggerFileOptions) error {
+	if options == nil {
+		return fmt.Errorf("failed to override the terradagger file, the options are nil")
+	}
+
+	if options.FileName == "" {
+		return fmt.Errorf("failed to override the terradagger file, the file name is empty")
+	}
+
+	if options.TerraDaggerID == "" {
+		return fmt.Errorf("failed to override the terradagger file, the terradagger id is empty")
+	}
+
+	if err := config.IsAValidTerraDaggerConfigDir(options.TerraDaggerConfigDir); err != nil {
+		return fmt.Errorf("failed to override the terradagger file, the terradagger config dir is invalid: %w", err)
+	}
+
+	filePathToOverride, err := GetTerraDaggerConfigPath(&GetTerraDaggerConfigPathOptions{
+		TerraDaggerID: options.TerraDaggerID,
+		ConfigDir:     options.TerraDaggerConfigDir,
+		FileOrDirName: options.FileName,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to override the terradagger file, the file path is invalid: %w", err)
+	}
+
+	// If the file do not exist, fail with an error.
+	if err := utils.OverrideFileIfExist(filePathToOverride, true); err != nil {
+		return fmt.Errorf("failed to override the terradagger file, the file %s do not exist: %w", filePathToOverride, err)
+	}
+
+	return nil
+}
+
+func (td *TD) OverrideTerraDaggerDir(options *OverrideTerraDaggerDirOptions) error {
+	if options == nil {
+		return fmt.Errorf("failed to override the terradagger dir, the options are nil")
+	}
+
+	if options.DirName == "" {
+		return fmt.Errorf("failed to override the terradagger dir, the dir name is empty")
+	}
+
+	if options.TerraDaggerID == "" {
+		return fmt.Errorf("failed to override the terradagger dir, the terradagger id is empty")
+	}
+
+	if err := config.IsAValidTerraDaggerConfigDir(options.TerraDaggerConfigDir); err != nil {
+		return fmt.Errorf("failed to override the terradagger dir, the terradagger config dir is invalid: %w", err)
+	}
+
+	dirPathToOverride, err := GetTerraDaggerConfigPath(&GetTerraDaggerConfigPathOptions{
+		TerraDaggerID: options.TerraDaggerID,
+		ConfigDir:     options.TerraDaggerConfigDir,
+		FileOrDirName: options.DirName,
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to override the terradagger dir, the dir path is invalid: %w", err)
+	}
+
+	// If the dir do not exist, fail with an error.
+	if err := utils.OverrideDirIfExist(dirPathToOverride, true); err != nil {
+		return fmt.Errorf("failed to override the terradagger dir, the dir %s do not exist: %w", dirPathToOverride, err)
+	}
+
+	return nil
+}
+
 func getDefaultOptionsIfEmpty(options *Options) {
 	if options == nil {
 		options = &Options{}
@@ -158,6 +245,7 @@ func New(ctx context.Context, options *Options) (*TD, error) {
 		Ctx:                     ctx,
 		daggerConfigClient:      config.NewDaggerBackendConfigClient(logger),
 		terraDaggerConfigClient: config.NewTerraDaggerConfig(logger),
+		ID:                      utils.GetUUID(),
 		Config: &Config{
 			TerraDagger: &config.TerraDagger{},
 			Dagger:      &config.DaggerBackend{},
@@ -203,10 +291,11 @@ func New(ctx context.Context, options *Options) (*TD, error) {
 }
 
 type RunOptions struct {
-	CopyFilesToContainer []string
-	CopyDirsToContainer  []string
-	CopyFilesToHost      []string
-	CopyDirsToHost       []string
+	// CopyFilesToContainer []string
+	// CopyDirsToContainer  []string
+	CopyFilesToHost       []string
+	CopyDirsToHost        []string
+	CopyToContainerConfig []*DataTransfer
 }
 
 func (td *TD) ResolveRunOptions(instance *ClientInstance) *RunOptions {
@@ -215,10 +304,9 @@ func (td *TD) ResolveRunOptions(instance *ClientInstance) *RunOptions {
 	}
 
 	return &RunOptions{
-		CopyFilesToContainer: instance.Config.runtime.containerHostInterop.copyFilesToContainer,
-		CopyDirsToContainer:  instance.Config.runtime.containerHostInterop.copyDirsToContainer,
-		CopyFilesToHost:      instance.Config.runtime.containerHostInterop.copyFilesToHost,
-		CopyDirsToHost:       instance.Config.runtime.containerHostInterop.copyDirsToHost,
+		CopyFilesToHost:       instance.Config.runtime.containerHostInterop.copyFilesToHost,
+		CopyDirsToHost:        instance.Config.runtime.containerHostInterop.copyDirsToHost,
+		CopyToContainerConfig: instance.Config.runtime.containerHostInterop.copyToContainerConfig,
 	}
 }
 
@@ -250,10 +338,12 @@ func (td *TD) Run(instance *ClientInstance, options *RunOptions) error {
 		return nil
 	}
 
+	// auxPaths :=
+
 	if len(options.CopyFilesToHost) > 0 {
 		for _, file := range options.CopyFilesToHost {
 			fileName := filepath.Base(file)
-			fileInHostPath := filepath.Join(instance.Config.Paths.ExportPath, fileName)
+			fileInHostPath := filepath.Join(instance.Config.Paths.ExportPathAbs, fileName)
 
 			if _, err := instance.runtimeContainer.DaggerContainer.File(file).
 				Export(td.Ctx, fileInHostPath); err != nil {
@@ -265,7 +355,7 @@ func (td *TD) Run(instance *ClientInstance, options *RunOptions) error {
 	if len(options.CopyDirsToHost) > 0 {
 		for _, dir := range options.CopyDirsToHost {
 			dirName := filepath.Base(dir)
-			dirInHostPath := filepath.Join(instance.Config.Paths.ExportPath, dirName)
+			dirInHostPath := filepath.Join(instance.Config.Paths.ExportPathAbs, dirName)
 
 			if _, err := instance.runtimeContainer.DaggerContainer.Directory(dir).
 				Export(td.Ctx, dirInHostPath); err != nil {
@@ -274,13 +364,10 @@ func (td *TD) Run(instance *ClientInstance, options *RunOptions) error {
 		}
 	}
 
-	if len(options.CopyDirsToContainer) > 0 {
-		for _, dir := range options.CopyDirsToContainer {
-			dirName := filepath.Base(dir)
-			dirInContainerPath := filepath.Join(instance.Config.Paths.WorkDirPathDagger, dirName)
-			dirAsDaggerFormat := td.DaggerBackend.Host().Directory(dir)
-
-			_, err := instance.runtimeContainer.DaggerContainer.WithDirectory(dirInContainerPath, dirAsDaggerFormat).Stdout(td.Ctx)
+	if len(options.CopyToContainerConfig) > 0 {
+		for _, cfg := range options.CopyToContainerConfig {
+			transferTargetAsDaggerFormat := td.DaggerBackend.Host().Directory(cfg.SourcePathAbs)
+			_, err := instance.runtimeContainer.DaggerContainer.WithDirectory(cfg.DestinationPath, transferTargetAsDaggerFormat).Stdout(td.Ctx)
 			if err != nil {
 				return err
 			}

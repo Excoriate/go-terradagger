@@ -104,8 +104,10 @@ func Init(td *terradagger.TD, options *Options, initOptions *InitOptions) error 
 		},
 		WorkDirPath:     options.TerraformModulePath,
 		TerraDaggerCMDs: tfCMDDagger,
-		WorkDirPreRequisites: &terradagger.Requisites{
-			RequiredFileExtensions: []string{".tf"},
+		PreRequisites: &terradagger.PreRequisites{
+			WorkDir: &terradagger.Requisites{
+				RequiredFileExtensions: []string{".tf"},
+			},
 		},
 		ExportFromContainer: &terradagger.ExportFromContainerOptions{
 			DirNames: []string{".terraform"},

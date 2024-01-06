@@ -75,10 +75,33 @@ func AreDirsToExcludeValid(mountPath string, dirsToExclude []string) error {
 	for _, dirToExclude := range dirsToExclude {
 		dirPath := filepath.Join(mountPath, dirToExclude)
 
-		if err := dirUtils.IsValidDir(dirPath); err != nil {
+		if err := dirUtils.IsValidDirE(dirPath); err != nil {
 			return fmt.Errorf("the dir %s to exclude is not a valid dir", dirPath)
 		}
 	}
 
 	return nil
+}
+
+func IsAValidTerraDaggerConfigDir(dirName string) error {
+	if dirName == "" {
+		return fmt.Errorf("the dir name is empty")
+	}
+
+	tdCfg := NewTerraDaggerConfig(nil)
+	allowedDirs := tdCfg.GetDirs()
+
+	allowedDirsSlice := []string{
+		allowedDirs.TerraDaggerExportDir,
+		allowedDirs.TerraDaggerCacheDir,
+		allowedDirs.TerraDaggerImportDir,
+	}
+
+	for _, allowedDir := range allowedDirsSlice {
+		if allowedDir == dirName {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("the dir name %s is not a valid dir name", dirName)
 }

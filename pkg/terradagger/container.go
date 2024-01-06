@@ -22,14 +22,14 @@ type CreateNewContainerOptions struct {
 }
 
 type ContainerValidator interface {
-	validate(options *CreateNewContainerOptions) error
+	ValidateContainerImage(options *CreateNewContainerOptions) error
 }
 
 type ContainerValidatorImpl struct {
 	logger o11y.LoggerInterface
 }
 
-func (cv *ContainerValidatorImpl) validate(options *CreateNewContainerOptions) error {
+func (cv *ContainerValidatorImpl) ValidateContainerImage(options *CreateNewContainerOptions) error {
 	if options == nil {
 		return fmt.Errorf("options cannot be nil")
 	}
@@ -49,7 +49,7 @@ func (cv *ContainerValidatorImpl) validate(options *CreateNewContainerOptions) e
 	return nil
 }
 
-func newContainerValidator(logger o11y.LoggerInterface) ContainerValidator {
+func NewContainerValidator(logger o11y.LoggerInterface) ContainerValidator {
 	if logger == nil {
 		logger = o11y.DefaultLogger()
 	}

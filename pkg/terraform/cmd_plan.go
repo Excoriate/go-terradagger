@@ -140,8 +140,10 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 		},
 		WorkDirPath:     options.TerraformModulePath,
 		TerraDaggerCMDs: tfCMDDagger,
-		WorkDirPreRequisites: &terradagger.Requisites{
-			RequiredFileExtensions: []string{".tf"},
+		PreRequisites: &terradagger.PreRequisites{
+			WorkDir: &terradagger.Requisites{
+				RequiredFileExtensions: []string{".tf"},
+			},
 		},
 		ImportToContainer: &terradagger.ImportToContainerOptions{
 			DirNames: []string{".terraform"}, // From the previous terraform init command

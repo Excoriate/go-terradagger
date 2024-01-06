@@ -10,11 +10,13 @@ type DirUtilities interface {
 	GetHomeDir() string
 	GetCurrentDir() string
 	DirExist(path string) bool
-	IsValidDir(path string) error
+	DirExistE(path string) error
+	IsValidDirE(path string) error
 	IsValidDirRelative(path string) error
 	IsValidDirAbsolute(path string) error
 	isValidDirCommon(path string) error
 	DirExistAndHasContent(dirPath string) error
+	DeleteDirE(dirPath string) error
 }
 
 type DirUtils struct{}
@@ -22,6 +24,10 @@ type DirUtils struct{}
 func (du *DirUtils) GetHomeDir() string {
 	homeDir, _ := os.UserHomeDir()
 	return homeDir
+}
+
+func NewDirUtils() DirUtilities {
+	return &DirUtils{}
 }
 
 func (du *DirUtils) GetCurrentDir() string {
@@ -37,7 +43,43 @@ func (du *DirUtils) DirExist(path string) bool {
 	return info.IsDir()
 }
 
-func (du *DirUtils) IsValidDir(path string) error {
+func (du *DirUtils) DirExistE(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	if !info.IsDir() {
+		return fmt.Errorf("path is not a directory: %s", path)
+	}
+
+	return nil
+}
+
+func (du *DirUtils) DeleteDirE(dirPath string) error {
+	if dirPath == "" {
+		return fmt.Errorf("directory path cannot be empty")
+	}
+
+	currentDir, _ := os.Getwd()
+
+	_, err := os.Stat(dirPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("directory %s does not exist in current directory %s", dirPath, currentDir)
+		}
+
+		return fmt.Errorf("unexpected error when checking the directory %s: %v", dirPath, err)
+	}
+
+	if err := os.RemoveAll(dirPath); err != nil {
+		return fmt.Errorf("failed to delete directory %s: %v", dirPath, err)
+	}
+
+	return nil
+}
+
+func (du *DirUtils) IsValidDirE(path string) error {
 	// Clean the path to remove any unnecessary parts.
 	cleanPath := filepath.Clean(path)
 

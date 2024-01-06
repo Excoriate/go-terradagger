@@ -51,7 +51,7 @@ func (o *Options) validate() error {
 
 	terraformDir := filepath.Join(o.TerraformSRC, o.TerraformModulePath)
 
-	if err := dirUtils.IsValidDir(terraformDir); err != nil {
+	if err := dirUtils.IsValidDirE(terraformDir); err != nil {
 		return &erroer.ErrTerraformOptionsAreInvalid{
 			Details:    "the terraform directory is invalid",
 			ErrWrapped: err,

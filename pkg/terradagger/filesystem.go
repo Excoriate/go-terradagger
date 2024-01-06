@@ -22,12 +22,10 @@ type InstancePathsResolved struct {
 }
 
 type fsResolver interface {
-	IsFileValidInHost(filePath string) error
 	IsMountPathValid(mountPath string) error
 	IsMountAndWorkDirPathValid(mountPathRelative, workDirPathRelative string) error
 	ResolveMountPathIfEmpty(mountPath string) string
 	ResolveWorkDirIfEmpty(workDirPath string) string
-	ResolveTerraDaggerDirPath(options *ResolveTerraDaggerDirPathOptions) (string, error)
 	ResolveAuxPaths(TerraDaggerDirPathResolved string) ResolveAuxPathsResult
 }
 
@@ -35,14 +33,6 @@ func newDirResolverClient(td *TD) fsResolver {
 	return &fsResolverClient{
 		td: td,
 	}
-}
-
-func (fs *fsResolverClient) IsFileValidInHost(filePath string) error {
-	if err := utils.FileExistE(filePath); err != nil {
-		return fmt.Errorf("failed to validate the file in the host, the file %s does not exist: %w", filePath, err)
-	}
-
-	return nil
 }
 
 func (fs *fsResolverClient) IsMountPathValid(mountPath string) error {
@@ -56,7 +46,7 @@ func (fs *fsResolverClient) IsMountPathValid(mountPath string) error {
 func (fs *fsResolverClient) IsMountAndWorkDirPathValid(mountPathRelative, workDirPathRelative string) error {
 	fullPath := filepath.Join(mountPathRelative, workDirPathRelative)
 	dirUtils := utils.DirUtils{}
-	if err := dirUtils.IsValidDir(fullPath); err != nil {
+	if err := dirUtils.IsValidDirE(fullPath); err != nil {
 		return fmt.Errorf("failed to Validate the mount and work dir path, the path %s is invalid: %w", fullPath, err)
 	}
 
@@ -81,55 +71,25 @@ func (fs *fsResolverClient) ResolveWorkDirIfEmpty(workDirPath string) string {
 	return workDirPath
 }
 
-type ResolveTerraDaggerDirPathOptions struct {
-	WorkspaceSRCPath string
-	ID               string
-}
-
-func (fs *fsResolverClient) ResolveTerraDaggerDirPath(options *ResolveTerraDaggerDirPathOptions) (string, error) {
-	if options == nil {
-		return "", fmt.Errorf("failed to resolve the terra dagger dir path, the options are nil")
-	}
-
-	if options.ID == "" {
-		return "", fmt.Errorf("failed to resolve the terra dagger dir path, the terra dagger id is empty")
-	}
-
-	if options.WorkspaceSRCPath == "" {
-		options.WorkspaceSRCPath = fs.td.Config.TerraDagger.Paths.Workspace.SRC // Automatically resolve the default '.' path
-		fs.td.Logger.Warn("Automatically resolved the src path to the default '.' path")
-	}
-
-	var srcPathAbs string
-	if utils.IsAbsolute(options.WorkspaceSRCPath) {
-		if err := config.IsAValidTerraDaggerDirAbsolute(options.WorkspaceSRCPath); err != nil {
-			return "", fmt.Errorf("failed to resolve the terra dagger dir path, the src path is invalid: %w", err)
-		}
-
-		srcPathAbs = options.WorkspaceSRCPath
-	} else {
-		if err := config.IsAValidTerraDaggerDirRelative(options.WorkspaceSRCPath); err != nil {
-			return "", fmt.Errorf("failed to resolve the terra dagger dir path, the src path is invalid: %w", err)
-		}
-
-		srcPathAbs, _ = filepath.Abs(options.WorkspaceSRCPath)
-	}
-
-	terraDaggerDirPath := filepath.Join(srcPathAbs, fs.td.Config.TerraDagger.Dirs.TerraDaggerDir, options.ID)
-	return terraDaggerDirPath, nil
-}
-
 type ResolveAuxPathsResult struct {
-	ExportPath string
-	CachePath  string
-	ImportPath string
+	ExportPath    string
+	ExportPathAbs string
+	CachePath     string
+	CachePathAbs  string
+	ImportPath    string
+	ImportPathAbs string
 }
 
-func (fs *fsResolverClient) ResolveAuxPaths(TerraDaggerDirPathResolved string) ResolveAuxPathsResult {
+func (fs *fsResolverClient) ResolveAuxPaths(terraDaggerConfigDirPath string) ResolveAuxPathsResult {
+	absPath, _ := utils.ConvertToAbsolute(terraDaggerConfigDirPath)
+
 	return ResolveAuxPathsResult{
-		ExportPath: filepath.Join(TerraDaggerDirPathResolved, fs.td.Config.TerraDagger.Dirs.TerraDaggerExportDir),
-		CachePath:  filepath.Join(TerraDaggerDirPathResolved, fs.td.Config.TerraDagger.Dirs.TerraDaggerCacheDir),
-		ImportPath: filepath.Join(TerraDaggerDirPathResolved, fs.td.Config.TerraDagger.Dirs.TerraDaggerImportDir),
+		ExportPath:    filepath.Join(terraDaggerConfigDirPath, fs.td.Config.TerraDagger.Dirs.TerraDaggerExportDir),
+		ExportPathAbs: filepath.Join(absPath, fs.td.Config.TerraDagger.Dirs.TerraDaggerExportDir),
+		CachePath:     filepath.Join(terraDaggerConfigDirPath, fs.td.Config.TerraDagger.Dirs.TerraDaggerCacheDir),
+		CachePathAbs:  filepath.Join(absPath, fs.td.Config.TerraDagger.Dirs.TerraDaggerCacheDir),
+		ImportPath:    filepath.Join(terraDaggerConfigDirPath, fs.td.Config.TerraDagger.Dirs.TerraDaggerImportDir),
+		ImportPathAbs: filepath.Join(absPath, fs.td.Config.TerraDagger.Dirs.TerraDaggerImportDir),
 	}
 }
 

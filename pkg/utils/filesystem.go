@@ -47,6 +47,37 @@ type IsValidRelativeToBaseOptions struct {
 	RelativePath string
 }
 
+func OverrideFileIfExist(filePath string, failIfFileDoNotExist bool) error {
+	if err := FileExistE(filePath); err != nil {
+		if failIfFileDoNotExist {
+			return err
+		}
+		return nil
+	}
+
+	if err := DeleteFileE(filePath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func OverrideDirIfExist(dirPath string, failIfDirDoNotExist bool) error {
+	dirUtils := DirUtils{}
+	if err := dirUtils.DirExistE(dirPath); err != nil {
+		if failIfDirDoNotExist {
+			return err
+		}
+		return nil
+	}
+
+	if err := dirUtils.DeleteDirE(dirPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func FileExistE(path string) error {
 	cleanPath := filepath.Clean(path)
 
@@ -169,4 +200,22 @@ func GetFilesByExtension(path, extension string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func ConvertToAbsolute(path string) (string, error) {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("error converting path %s to absolute path: %v", path, err)
+	}
+
+	return absPath, nil
+}
+
+func ConvertToRelative(path string) (string, error) {
+	relPath, err := filepath.Rel(".", path)
+	if err != nil {
+		return "", fmt.Errorf("error converting path %s to relative path: %v", path, err)
+	}
+
+	return relPath, nil
 }

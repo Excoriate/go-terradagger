@@ -56,7 +56,7 @@ func TestIsValidDir(t *testing.T) {
 
 	du := &DirUtils{}
 
-	assert.NoError(t, du.IsValidDir(tempDir), "Temporary directory should be valid")
+	assert.NoError(t, du.IsValidDirE(tempDir), "Temporary directory should be valid")
 }
 
 func TestDirExistAndHasContent(t *testing.T) {

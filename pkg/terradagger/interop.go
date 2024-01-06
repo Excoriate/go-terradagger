@@ -29,21 +29,21 @@ func newInteropClient(td *TD) interop {
 
 func (c *interopClient) FilesToCopyFromHostAreValid(o *FilesToCopyFromHostAreValidOptions) error {
 	if o == nil {
-		return fmt.Errorf("failed to validate the files to copy from host, the options are nil")
+		return fmt.Errorf("failed to ValidateContainerImage the files to copy from host, the options are nil")
 	}
 
 	if o.Files == nil {
-		return fmt.Errorf("failed to validate the files to copy from host, the files are nil")
+		return fmt.Errorf("failed to ValidateContainerImage the files to copy from host, the files are nil")
 	}
 
 	if o.BaseExportPathAbs == "" {
-		return fmt.Errorf("failed to validate the files to copy from host, the base export path cannot be empty")
+		return fmt.Errorf("failed to ValidateContainerImage the files to copy from host, the base export path cannot be empty")
 	}
 
 	if len(o.Files) > 0 {
 		for _, file := range o.Files {
 			if file == "" {
-				return fmt.Errorf("failed to validate the files to copy from host, the file cannot be empty")
+				return fmt.Errorf("failed to ValidateContainerImage the files to copy from host, the file cannot be empty")
 			}
 		}
 	}
