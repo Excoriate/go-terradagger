@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0](https://github.com/Excoriate/go-terradagger/compare/v1.1.0...v1.2.0) (2024-01-08)
+
+
+### Features
+
+* Add advanced export APIs ([3729d62](https://github.com/Excoriate/go-terradagger/commit/3729d621bf4060281dee8a00f70fd6937ba5c4cd))
+* Add security group module ([814faf6](https://github.com/Excoriate/go-terradagger/commit/814faf62b6fbf65c6eccb34d4fbd2b7b10993086))
+* Add tests for dirs.go in TerraDagger ([9854117](https://github.com/Excoriate/go-terradagger/commit/9854117a981626255febd61222546c118f39cb55))
+
+
+### Refactoring
+
+* Add client configuration API ([d821f58](https://github.com/Excoriate/go-terradagger/commit/d821f58cc538a2a6ce7fbd34f685d57197cc626c))
+* Add export and import functionality ([8f149d8](https://github.com/Excoriate/go-terradagger/commit/8f149d8f36a585bb8d4cff25cdc88e897eeb0ca4))
+* Add instance validator interface ([38d4045](https://github.com/Excoriate/go-terradagger/commit/38d4045671c9c3002df4e77a3036b34cdc43ac74))
+* Add unit tests for commands, args and command's package ([79ae9e5](https://github.com/Excoriate/go-terradagger/commit/79ae9e5734bd00d833d2d73b465e866d583b81c2))
+* New logic ([134f531](https://github.com/Excoriate/go-terradagger/commit/134f5315282164b68ad499444d904f5ffdfaa7d1))
+
 ## [1.1.0](https://github.com/Excoriate/go-terradagger/compare/v1.0.0...v1.1.0) (2023-12-24)
 
 
