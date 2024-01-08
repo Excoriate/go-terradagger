@@ -165,7 +165,7 @@ func Destroy(td *terradagger.TD, options *Options, destroyOptions *DestroyOption
 		return err
 	}
 
-	if err := td.Run(clientInstance, nil); err != nil {
+	if err := td.Execute(clientInstance, nil); err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform destroy command failed to run",

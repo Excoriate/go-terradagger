@@ -22,7 +22,7 @@ var (
 
 var Cmd = &cobra.Command{
 	Use:   "tf",
-	Short: "Run terraform CI Jobs using Dagger",
+	Short: "Execute terraform CI Jobs using Dagger",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		// Build the UX.
@@ -89,7 +89,7 @@ var Cmd = &cobra.Command{
 }
 
 func AddFlags() {
-	Cmd.PersistentFlags().BoolVarP(&all, "all", "", false, "Run all recipes in the 'examples' folder.")
+	Cmd.PersistentFlags().BoolVarP(&all, "all", "", false, "Execute all recipes in the 'examples' folder.")
 	Cmd.PersistentFlags().StringVarP(&terraformDir, "terraform-dir", "", "",
 		"The directory where the terraform code resides. "+
 			"It is also the directory that'll be mounted into Dagger's container.")

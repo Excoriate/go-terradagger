@@ -8,19 +8,19 @@ import (
 
 // func TestDirExistAndHasContent(t *testing.T) {
 // 	dirUtils := DirUtils{}
-// 	t.Run("empty directory path", func(t *testing.T) {
+// 	t.Execute("empty directory path", func(t *testing.T) {
 // 		err := dirUtils.DirExistAndHasContent("")
 // 		assert.Error(t, err, "Expected error due to empty directory path not found")
 // 		assert.EqualError(t, err, "directory path cannot be empty")
 // 	})
 //
-// 	t.Run("non existent directory", func(t *testing.T) {
+// 	t.Execute("non existent directory", func(t *testing.T) {
 // 		err := dirUtils.DirExistAndHasContent("/nonexistent_directory")
 // 		assert.Error(t, err, "Expected error due to non existent directory")
 // 		assert.Contains(t, err.Error(), "does not exist in current directory")
 // 	})
 //
-// 	t.Run("existent directory", func(t *testing.T) {
+// 	t.Execute("existent directory", func(t *testing.T) {
 // 		testDir, _ := ioutil.TempDir("", "existent_directory")
 // 		defer os.RemoveAll(testDir)
 //

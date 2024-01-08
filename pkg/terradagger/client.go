@@ -139,9 +139,10 @@ type ExcludeOptions struct {
 }
 
 type containerHostInteropConfig struct {
-	copyFilesToHost       []string // Equivalent to export.
-	copyDirsToHost        []string // Equivalent to export.
-	copyToContainerConfig []*DataTransfer
+	transferToHost               *DataTransferToHost
+	isTransferToHostEnabled      bool
+	transferToContainer          *DataTransferToContainer
+	isTransferToContainerEnabled bool
 }
 
 type Instance interface {
@@ -409,8 +410,8 @@ func (i *InstanceImpl) Configure(options *ClientOptions) (*InstanceConfig, error
 	}
 
 	if exportCfg != nil {
-		instanceCfg.runtime.containerHostInterop.copyFilesToHost = exportCfg.PathsCopyFilesToHost
-		instanceCfg.runtime.containerHostInterop.copyDirsToHost = exportCfg.PathsCopyDirsToHost
+		instanceCfg.runtime.containerHostInterop.transferToHost = exportCfg
+		instanceCfg.runtime.containerHostInterop.isTransferToHostEnabled = true
 	}
 
 	// 10. Import from container to host (files and dirs)
@@ -426,41 +427,10 @@ func (i *InstanceImpl) Configure(options *ClientOptions) (*InstanceConfig, error
 		return nil, fmt.Errorf("failed to Configure the terradagger instance, the configuration of the import to container failed: %w", err)
 	}
 
-	instanceCfg.runtime.containerHostInterop.copyToContainerConfig = importCfg
-
-	// if options.ImportToContainer != nil {
-	// 	if len(options.ImportToContainer.FileNames) > 0 {
-	// 		for _, file := range options.ImportToContainer.FileNames {
-	// 			var fileInHostPath string
-	// 			if options.ImportToContainer.LookupFromWorkDir {
-	// 				fileInHostPath = filepath.Join(instanceCfg.Paths.WorkDirPathAbs, file)
-	// 			} else {
-	// 				fileInHostPath = filepath.Join(instanceCfg.Paths.ImportPathAbs, file)
-	// 			}
-	//
-	// 			instanceCfg.runtime.containerHostInterop.copyFilesToContainer = append(instanceCfg.runtime.containerHostInterop.copyFilesToContainer, fileInHostPath)
-	// 		}
-	// 	}
-	//
-	// 	if len(options.ImportToContainer.DirNames) > 0 {
-	// 		for _, dir := range options.ImportToContainer.DirNames {
-	// 			var dirInHostPath string
-	// 			if options.ImportToContainer.LookupFromWorkDir {
-	// 				dirInHostPath = filepath.Join(instanceCfg.Paths.WorkDirPathAbs, dir)
-	// 			} else {
-	// 				dirInHostPath = filepath.Join(instanceCfg.Paths.ImportPathAbs, dir)
-	// 			}
-	//
-	// 			// Check if the dirInHostPath resolved exist, and it's valid.
-	// 			if err := config.IsAValidTerraDaggerDirAbsolute(dirInHostPath); err != nil {
-	// 				return nil, fmt.Errorf("failed to Configure the terradagger instance, the dir %s is invalid: %w", dir, err)
-	// 			}
-	//
-	// 			instanceCfg.runtime.containerHostInterop.copyDirsToContainer = append(instanceCfg.runtime.containerHostInterop.copyDirsToContainer, dirInHostPath)
-	// 		}
-	// 	}
-	// }
-	//
+	if importCfg != nil {
+		instanceCfg.runtime.containerHostInterop.transferToContainer = importCfg
+		instanceCfg.runtime.containerHostInterop.isTransferToContainerEnabled = true
+	}
 
 	// 11. Env vars
 	clientEnvVars, err := clientConfigurator.ConfigureEnvVars(&ConfigureEnvVarsOptions{

@@ -170,7 +170,7 @@ func Apply(td *terradagger.TD, options *Options, applyOptions *ApplyOptions) err
 		return err
 	}
 
-	if err := td.Run(clientInstance, nil); err != nil {
+	if err := td.Execute(clientInstance, nil); err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform init command failed to run",
@@ -201,7 +201,7 @@ func Apply(td *terradagger.TD, options *Options, applyOptions *ApplyOptions) err
 	// 	}
 	// }
 	//
-	// // Run the container.
+	// // Execute the container.
 	// if applyOptions.PreserveTFState {
 	// 	_, _ = td.RunWithExport(c, &terradagger.RunWithExportOptions{
 	// 		TargetDirsFromContainer: []string{tfDefaultCacheDir},
@@ -210,5 +210,5 @@ func Apply(td *terradagger.TD, options *Options, applyOptions *ApplyOptions) err
 	// 	}, tdOptions)
 	// }
 	//
-	// return td.Run(c)
+	// return td.Execute(c)
 }

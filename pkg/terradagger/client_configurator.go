@@ -9,8 +9,8 @@ import (
 )
 
 type ClientConfigurator interface {
-	ConfigureExportFromContainer(options *ConfigureExportFromContainerOptions) (*ConfigureExportFromContainerResult, error)
-	ConfigureImportToContainer(options *ConfigureImportToContainerOptions) ([]*DataTransfer, error)
+	ConfigureExportFromContainer(options *ConfigureExportFromContainerOptions) (*DataTransferToHost, error)
+	ConfigureImportToContainer(options *ConfigureImportToContainerOptions) (*DataTransferToContainer, error)
 	ConfigureEnvVars(options *ConfigureEnvVarsOptions) (*ConfigureEnvVarsResult, error)
 }
 
@@ -51,7 +51,7 @@ type ConfigureExportFromContainerResult struct {
 }
 
 func (c *ClientConfiguratorImpl) ConfigureExportFromContainer(
-	options *ConfigureExportFromContainerOptions) (*ConfigureExportFromContainerResult, error) {
+	options *ConfigureExportFromContainerOptions) (*DataTransferToHost, error) {
 	if options == nil || options.ParamOptions == nil {
 		c.clientInstance.td.Logger.Info("no files or dirs to export from the container")
 		return nil, nil
@@ -77,11 +77,18 @@ func (c *ClientConfiguratorImpl) ConfigureExportFromContainer(
 		}
 	}
 
-	result := &ConfigureExportFromContainerResult{}
+	result := &DataTransferToHost{}
+	result.WorkDirPath = options.WorkDirPathDagger
 
 	for _, fileName := range paramOptions.FileNames {
 		exportFilePath := fmt.Sprintf("%s/%s", options.WorkDirPathDagger, fileName)
-		result.PathsCopyFilesToHost = append(result.PathsCopyFilesToHost, exportFilePath)
+		exportPathInHost := fmt.Sprintf("%s/%s", options.ExportPathInHost, fileName)
+		exportPathInHostAbs, _ := utils.ConvertToAbsolute(exportPathInHost)
+
+		result.Files = append(result.Files, TransferToHost{
+			SourcePathInContainer:    exportFilePath,
+			DestinationPathInHostAbs: exportPathInHostAbs,
+		})
 
 		if paramOptions.OverrideIfExistInHost {
 			if err := c.clientInstance.td.OverrideTerraDaggerFile(&OverrideTerraDaggerFileOptions{
@@ -101,7 +108,13 @@ func (c *ClientConfiguratorImpl) ConfigureExportFromContainer(
 
 	for _, dirName := range paramOptions.DirNames {
 		exportDirPath := fmt.Sprintf("%s/%s", options.WorkDirPathDagger, dirName)
-		result.PathsCopyDirsToHost = append(result.PathsCopyDirsToHost, exportDirPath)
+		exportPathInHost := fmt.Sprintf("%s/%s", options.ExportPathInHost, dirName)
+		exportPathInHostAbs, _ := utils.ConvertToAbsolute(exportPathInHost)
+
+		result.Dirs = append(result.Dirs, TransferToHost{
+			SourcePathInContainer:    exportDirPath,
+			DestinationPathInHostAbs: exportPathInHostAbs,
+		})
 
 		if paramOptions.OverrideIfExistInHost {
 			if err := c.clientInstance.td.OverrideTerraDaggerDir(&OverrideTerraDaggerDirOptions{
@@ -186,7 +199,8 @@ type ConfigureImportToContainerOptions struct {
 	SourceImportPathInHost string
 }
 
-func (c *ClientConfiguratorImpl) ConfigureImportToContainer(options *ConfigureImportToContainerOptions) ([]*DataTransfer, error) {
+func (c *ClientConfiguratorImpl) ConfigureImportToContainer(
+	options *ConfigureImportToContainerOptions) (*DataTransferToContainer, error) {
 	if options == nil || options.ParamOptions == nil {
 		c.clientInstance.td.Logger.Info("no files or dirs to import to the container")
 		return nil, nil
@@ -224,7 +238,8 @@ func (c *ClientConfiguratorImpl) ConfigureImportToContainer(options *ConfigureIm
 		}
 	}
 
-	var result []*DataTransfer
+	var result *DataTransferToContainer
+	result.WorkDirPath = options.WorkDirPathInContainer
 
 	for _, fileName := range paramOptions.FileNames {
 		var sourcePathInHost string
@@ -248,10 +263,13 @@ func (c *ClientConfiguratorImpl) ConfigureImportToContainer(options *ConfigureIm
 			}
 		}
 
-		result = append(result, &DataTransfer{
-			SourcePath:      sourcePathInHost,
-			DestinationPath: fmt.Sprintf("%s/%s", options.WorkDirPathInContainer, fileName),
+		sourcePathInHostAbs, _ := utils.ConvertToAbsolute(sourcePathInHost)
+
+		result.Files = append(result.Files, TransferToContainer{
+			SourcePathInHostAbs:        sourcePathInHostAbs,
+			DestinationPathInContainer: fmt.Sprintf("%s/%s", options.WorkDirPathInContainer, fileName),
 		})
+
 	}
 
 	for _, dirName := range paramOptions.DirNames {
@@ -272,12 +290,11 @@ func (c *ClientConfiguratorImpl) ConfigureImportToContainer(options *ConfigureIm
 
 		sourcePathAbs, _ := utils.ConvertToAbsolute(sourcePathInHost)
 
-		result = append(result, &DataTransfer{
-			IsDir:           true,
-			SourcePath:      sourcePathInHost,
-			SourcePathAbs:   sourcePathAbs,
-			DestinationPath: fmt.Sprintf("%s/%s", options.WorkDirPathInContainer, dirName),
+		result.Dirs = append(result.Dirs, TransferToContainer{
+			SourcePathInHostAbs:        sourcePathAbs,
+			DestinationPathInContainer: fmt.Sprintf("%s/%s", options.WorkDirPathInContainer, dirName),
 		})
+
 	}
 
 	return result, nil

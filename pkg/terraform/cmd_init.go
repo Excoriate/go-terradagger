@@ -110,7 +110,8 @@ func Init(td *terradagger.TD, options *Options, initOptions *InitOptions) error 
 			},
 		},
 		ExportFromContainer: &terradagger.ExportFromContainerOptions{
-			DirNames: []string{".terraform"},
+			DirNames:  []string{".terraform"},
+			FileNames: []string{".terraform.lock.hcl"},
 		},
 	}
 
@@ -134,7 +135,7 @@ func Init(td *terradagger.TD, options *Options, initOptions *InitOptions) error 
 		return err
 	}
 
-	if err := td.Run(clientInstance, td.ResolveRunOptions(clientInstance)); err != nil {
+	if err = td.Execute(clientInstance, nil); err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform init command failed to run",

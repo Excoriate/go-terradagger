@@ -146,7 +146,11 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 			},
 		},
 		ImportToContainer: &terradagger.ImportToContainerOptions{
-			DirNames: []string{".terraform"}, // From the previous terraform init command
+			DirNames:  []string{".terraform"},          // From the previous terraform init command
+			FileNames: []string{".terraform.lock.hcl"}, // From the previous terraform init command
+		},
+		ExportFromContainer: &terradagger.ExportFromContainerOptions{
+			FileNames: []string{"terraform.tfstate"}, // From the previous terraform init command
 		},
 	}
 
@@ -170,7 +174,7 @@ func Plan(td *terradagger.TD, options *Options, planOptions *PlanOptions) error 
 		return err
 	}
 
-	if err := td.Run(clientInstance, td.ResolveRunOptions(clientInstance)); err != nil {
+	if err = td.Execute(clientInstance, nil); err != nil {
 		return &erroer.ErrTerraformInitFailedToStart{
 			ErrWrapped: err,
 			Details:    "the terraform plan command failed to run",
