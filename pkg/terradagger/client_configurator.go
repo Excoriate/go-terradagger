@@ -238,7 +238,7 @@ func (c *ClientConfiguratorImpl) ConfigureImportToContainer(
 		}
 	}
 
-	var result *DataTransferToContainer
+	result := &DataTransferToContainer{}
 	result.WorkDirPath = options.WorkDirPathInContainer
 
 	for _, fileName := range paramOptions.FileNames {

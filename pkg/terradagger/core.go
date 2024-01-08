@@ -308,7 +308,8 @@ func (td *TD) Execute(instance *ClientInstance, options *RunOptions) error {
 
 	if transferCfg.isTransferToContainerEnabled {
 		ic := NewContainerImporter(td)
-		updatedContainer, err := ic.AddDataToImportInContainer(instance.runtimeContainer.DaggerContainer, options.TransferToContainer)
+		updatedContainer, err := ic.AddDataToImportInContainer(instance.runtimeContainer.
+			DaggerContainer, transferCfg.transferToContainer)
 		if err != nil {
 			return err
 		}
@@ -321,96 +322,4 @@ func (td *TD) Execute(instance *ClientInstance, options *RunOptions) error {
 	}
 
 	return r.RunWithExport(instance, &RuntWithExportOptions{})
-
-	// container := instance.runtimeContainer.DaggerContainer.Export(nil, "")
-	//
-	// var filesToImport []*dagger.File
-	// var dirsToImport []*dagger.Directory
-	//
-	// if len(options.CopyToContainerConfig) > 0 {
-	// 	for _, cfg := range options.CopyToContainerConfig {
-	// 		if cfg.IsDir {
-	// 			dirsToImport = append(dirsToImport, td.DaggerBackend.Host().Directory(cfg.SourcePathAbs))
-	// 			container = container.WithDirectory(cfg.DestinationPath, td.DaggerBackend.Host().Directory(cfg.SourcePathAbs))
-	// 		} else {
-	// 			filesToImport = append(filesToImport, td.DaggerBackend.Host().File(cfg.SourcePathAbs))
-	// 			container = container.WithFile(cfg.DestinationPath, td.DaggerBackend.Host().File(cfg.SourcePathAbs))
-	// 		}
-	// 	}
-	// }
-	//
-	// // Export files.
-	// exportIsEnabled := len(options.CopyFilesToHost) > 0 || len(options.CopyDirsToHost) > 0
-	//
-	// daggerFilesToExport := make([]*dagger.File, 0)
-	// daggerDirsToExport := make([]*dagger.Directory, 0)
-	//
-	// for _, file := range options.CopyFilesToHost {
-	// 	fileName := filepath.Base(file)
-	// 	fileInHostPath := filepath.Join(instance.Config.Paths.ExportPathAbs, fileName)
-	// 	daggerFile := container.File(fileInHostPath)
-	// 	daggerFilesToExport = append(daggerFilesToExport, daggerFile)
-	// }
-	//
-	// for _, dir := range options.CopyDirsToHost {
-	// 	dirName := filepath.Base(dir)
-	// 	dirInHostPath := filepath.Join(instance.Config.Paths.ExportPathAbs, dirName)
-	// 	daggerDir := container.Directory(dirInHostPath)
-	// 	daggerDirsToExport = append(daggerDirsToExport, daggerDir)
-	// }
-	//
-	// if exportIsEnabled {
-	// }
-
-	// if len(options.CopyFilesToHost) > 0 {
-	// 	for _, file := range options.CopyFilesToHost {
-	// 		fileName := filepath.Base(file)
-	// 		fileInHostPath := filepath.Join(instance.Config.Paths.ExportPathAbs, fileName)
-	//
-	// 		if _, err := instance.runtimeContainer.DaggerContainer.File(file).
-	// 			Export(td.Ctx, fileInHostPath); err != nil {
-	// 			td.Logger.Error("Failed to export file", "file", file, "error", err)
-	// 		}
-	// 	}
-	// }
-	//
-	// if len(options.CopyDirsToHost) > 0 {
-	// 	for _, dir := range options.CopyDirsToHost {
-	// 		dirName := filepath.Base(dir)
-	// 		dirInHostPath := filepath.Join(instance.Config.Paths.ExportPathAbs, dirName)
-	//
-	// 		if _, err := instance.runtimeContainer.DaggerContainer.Directory(dir).
-	// 			Export(td.Ctx, dirInHostPath); err != nil {
-	// 			td.Logger.Error("Failed to export directory", "directory", dir, "error", err)
-	// 		}
-	// 	}
-	// }
-
-	// if len(options.CopyToContainerConfig) > 0 {
-	//
-	// 	for _, cfg := range options.CopyToContainerConfig {
-	// 		// Remove the darwin_arm64 if found.
-	// 		// if cfg.IsDir {
-	// 		// 	if err := utils.RemoveTargetFromPath(cfg.SourcePathAbs, "darwin_arm64"); err != nil {
-	// 		// 		return err
-	// 		// 	}
-	// 		// }
-	//
-	// 		// cfg.SourcePathAbs = fmt.Sprintf("%s_cleaned", cfg.SourcePathAbs)
-	//
-	// 		if cfg.IsDir {
-	// 			daggerDir := td.DaggerBackend.Host().Directory(cfg.SourcePathAbs)
-	// 			instance.runtimeContainer.DaggerContainer = instance.runtimeContainer.DaggerContainer.WithDirectory(cfg.DestinationPath, daggerDir)
-	// 		} else {
-	// 			daggerFile := td.DaggerBackend.Host().File(cfg.SourcePathAbs)
-	// 			instance.runtimeContainer.DaggerContainer = instance.runtimeContainer.DaggerContainer.WithFile(cfg.DestinationPath, daggerFile)
-	// 		}
-	//
-	// 		_, err := instance.runtimeContainer.DaggerContainer.Stdout(td.Ctx)
-	// 		// _, err := instance.runtimeContainer.DaggerContainer.WithDirectory(cfg.DestinationPath, transferTargetAsDaggerFormat).Stdout(td.Ctx)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
 }

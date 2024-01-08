@@ -11,7 +11,7 @@ type Exporter interface {
 	IsAdvancedExportEnabled(c *ClientInstance) bool
 	validateExportOptions(options *ExportAdvanceOptions) error
 	ExportAdvance(c *ClientInstance, options *ExportAdvanceOptions) error
-	FilterContentInCache(cachePathAbs, files, dirs []string) (*CacheContent, error)
+	FilterContentInCache(cachePathAbs string, files, dirs []string) (*CacheContent, error)
 }
 
 type ExporterImpl struct {
@@ -150,6 +150,8 @@ func (ei *ExporterImpl) ExportAdvance(c *ClientInstance, options *ExportAdvanceO
 		}
 	}
 
+	ei.td.Logger.Info(fmt.Sprintf("the work dir %s was filtered in the cache", workDirPathInCache))
+
 	if len(cacheContent.Files) == 0 && len(cacheContent.Dirs) == 0 {
 		return &ExporterError{
 			Details: "the exporter failed to filter the content in the cache",
@@ -164,6 +166,8 @@ func (ei *ExporterImpl) ExportAdvance(c *ClientInstance, options *ExportAdvanceO
 		}
 	}
 
+	ei.td.Logger.Info(fmt.Sprintf("the work dir %s was copied from the cache to the export path", workDirPathInCache))
+
 	// delete the old work dir in the cache.
 	if err := utils.DeleteDirE(workDirPathInCache); err != nil {
 		return &ExporterError{
@@ -171,6 +175,8 @@ func (ei *ExporterImpl) ExportAdvance(c *ClientInstance, options *ExportAdvanceO
 			Details:    "the exporter failed to delete the old work dir in the cache",
 		}
 	}
+
+	ei.td.Logger.Info(fmt.Sprintf("the work dir %s was deleted from the cache", workDirPathInCache))
 
 	return nil
 }
