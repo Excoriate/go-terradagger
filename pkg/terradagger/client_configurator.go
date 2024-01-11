@@ -10,6 +10,7 @@ import (
 
 type ClientConfigurator interface {
 	ConfigureExportFromContainer(options *ConfigureExportFromContainerOptions) (*DataTransferToHost, error)
+	ConfigureExportBackup(options *ConfigureExportBackupOptions) (*DataBackupInHost, error)
 	ConfigureImportToContainer(options *ConfigureImportToContainerOptions) (*DataTransferToContainer, error)
 	ConfigureEnvVars(options *ConfigureEnvVarsOptions) (*ConfigureEnvVarsResult, error)
 }
@@ -80,15 +81,28 @@ func (c *ClientConfiguratorImpl) ConfigureExportFromContainer(
 	result := &DataTransferToHost{}
 	result.WorkDirPath = options.WorkDirPathDagger
 
+	// backupID := utils.GetUUID()
+	// backupPath := fmt.Sprintf("backup/%s/%s", backupID, paramOptions.ExportBackupOptions.BackupIdentifier)
+
 	for _, fileName := range paramOptions.FileNames {
 		exportFilePath := fmt.Sprintf("%s/%s", options.WorkDirPathDagger, fileName)
 		exportPathInHost := fmt.Sprintf("%s/%s", options.ExportPathInHost, fileName)
 		exportPathInHostAbs, _ := utils.ConvertToAbsolute(exportPathInHost)
 
-		result.Files = append(result.Files, TransferToHost{
+		fileToExport := TransferToHost{
 			SourcePathInContainer:    exportFilePath,
 			DestinationPathInHostAbs: exportPathInHostAbs,
-		})
+		}
+
+		// if paramOptions.ExportBackupOptions != nil {
+		// 	backupFilePathInHost := fmt.Sprintf("%s/%s", exportPathInHostAbs, backupPath)
+		//
+		// 	fileToExport.BackupPathInHostAbs = backupFilePathInHost
+		//
+		// 	c.clientInstance.td.Logger.Info(fmt.Sprintf("The file %s will be backed up from the container to %s", fileName, backupFilePathInHost))
+		// }
+
+		result.Files = append(result.Files, fileToExport)
 
 		if paramOptions.OverrideIfExistInHost {
 			if err := c.clientInstance.td.OverrideTerraDaggerFile(&OverrideTerraDaggerFileOptions{
@@ -111,10 +125,21 @@ func (c *ClientConfiguratorImpl) ConfigureExportFromContainer(
 		exportPathInHost := fmt.Sprintf("%s/%s", options.ExportPathInHost, dirName)
 		exportPathInHostAbs, _ := utils.ConvertToAbsolute(exportPathInHost)
 
-		result.Dirs = append(result.Dirs, TransferToHost{
+		dirToExport := TransferToHost{
 			SourcePathInContainer:    exportDirPath,
 			DestinationPathInHostAbs: exportPathInHostAbs,
-		})
+		}
+
+		// if paramOptions.ExportBackupOptions != nil {
+		// 	backupDirName := fmt.Sprintf("%s-%s", backupID, paramOptions.ExportBackupOptions.BackupIdentifier)
+		// 	backupDirPathInHost := fmt.Sprintf("%s/%s", options.ExportPathInHost, backupDirName)
+		//
+		// 	dirToExport.BackupPathInHostAbs = backupDirPathInHost
+		//
+		// 	c.clientInstance.td.Logger.Info(fmt.Sprintf("The dir %s will be backed up from the container to %s", dirName, backupDirPathInHost))
+		// }
+
+		result.Dirs = append(result.Dirs, dirToExport)
 
 		if paramOptions.OverrideIfExistInHost {
 			if err := c.clientInstance.td.OverrideTerraDaggerDir(&OverrideTerraDaggerDirOptions{
@@ -130,6 +155,80 @@ func (c *ClientConfiguratorImpl) ConfigureExportFromContainer(
 		}
 
 		c.clientInstance.td.Logger.Info(fmt.Sprintf("The dir %s will be exported from the container to %s", dirName, options.ExportPathInHost))
+	}
+
+	return result, nil
+}
+
+type ConfigureExportBackupOptions struct {
+	ParamOptions     *ExportBackupOptions
+	ExportPathInHost string
+}
+
+func (c *ClientConfiguratorImpl) ConfigureExportBackup(options *ConfigureExportBackupOptions) (*DataBackupInHost, error) {
+	if options == nil || options.ParamOptions == nil {
+		c.clientInstance.td.Logger.Info("no backup options to configure")
+		return nil, nil
+	}
+
+	paramOptions := options.ParamOptions
+
+	if paramOptions.BackupIdentifier == "" {
+		return nil, &ClientConfiguratorError{
+			Details: "the backup identifier is empty",
+		}
+	}
+
+	if options.ExportPathInHost == "" {
+		return nil, &ClientConfiguratorError{
+			Details: "the export path in host is empty",
+		}
+	}
+
+	backupID := utils.GetUUID()
+	backupPath := fmt.Sprintf("backup/%s/%s", paramOptions.BackupIdentifier, backupID)
+	backupPathInHost := fmt.Sprintf("%s/%s", options.ExportPathInHost, backupPath)
+	backupPathInHostAbs, _ := utils.ConvertToAbsolute(backupPathInHost)
+
+	c.clientInstance.td.Logger.Info(fmt.Sprintf("The backup will be exported to %s", backupPathInHostAbs))
+
+	result := &DataBackupInHost{
+		BackupPathInHostAbs: backupPathInHostAbs,
+		ID:                  backupID,
+		Files:               []*DataBackupContent{},
+		Dirs:                []*DataBackupContent{},
+
+		// BackupID:      backupID,
+		// BackupPathAbs: backupPathInHostAbs,
+	}
+
+	if len(paramOptions.FilesToBackup) > 0 {
+		for _, fileName := range paramOptions.FilesToBackup {
+			backupFilePath := fmt.Sprintf("%s/%s", backupPathInHostAbs, fileName)
+			backupFilePathAbs, _ := utils.ConvertToAbsolute(backupFilePath)
+
+			result.Files = append(result.Files, &DataBackupContent{
+				DestinationPathAbs: backupFilePathAbs,
+				SourcePathAbs:      fmt.Sprintf("%s/%s", options.ExportPathInHost, fileName),
+			})
+
+			c.clientInstance.td.Logger.Info(fmt.Sprintf("The file %s will be backed up to %s", fileName, backupFilePathAbs))
+		}
+	}
+
+	if len(paramOptions.DirsToBackup) > 0 {
+		for _, dirName := range paramOptions.DirsToBackup {
+			backupDirPath := fmt.Sprintf("%s/%s", backupPathInHostAbs, dirName)
+			backupDirPathAbs, _ := utils.ConvertToAbsolute(backupDirPath)
+
+			// result.BackupDirsPaths = append(result.BackupDirsPaths, backupDirPathAbs)
+			result.Dirs = append(result.Dirs, &DataBackupContent{
+				DestinationPathAbs: backupDirPathAbs,
+				SourcePathAbs:      fmt.Sprintf("%s/%s", options.ExportPathInHost, dirName),
+			})
+
+			c.clientInstance.td.Logger.Info(fmt.Sprintf("The dir %s will be backed up to %s", dirName, backupDirPathAbs))
+		}
 	}
 
 	return result, nil

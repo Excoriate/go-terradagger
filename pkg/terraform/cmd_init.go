@@ -112,6 +112,11 @@ func Init(td *terradagger.TD, options *Options, initOptions *InitOptions) error 
 		ExportFromContainer: &terradagger.ExportFromContainerOptions{
 			DirNames:  []string{".terraform"},
 			FileNames: []string{".terraform.lock.hcl"},
+			ExportBackupOptions: &terradagger.ExportBackupOptions{
+				DirsToBackup:     []string{".terraform"},
+				FilesToBackup:    []string{".terraform.lock.hcl"},
+				BackupIdentifier: "terraform-init",
+			},
 		},
 	}
 

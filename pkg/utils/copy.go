@@ -17,7 +17,7 @@ func CopyPaths(filePaths, dirPaths []string, destDir string) error {
 	// Copy files.
 	for _, filePath := range filePaths {
 		destFilePath := filepath.Join(destDir, filepath.Base(filePath))
-		if err := copyFile(filePath, destFilePath); err != nil {
+		if err := CopyFile(filePath, destFilePath); err != nil {
 			return err
 		}
 	}
@@ -25,7 +25,7 @@ func CopyPaths(filePaths, dirPaths []string, destDir string) error {
 	// Copy directories.
 	for _, dirPath := range dirPaths {
 		destDirPath := filepath.Join(destDir, filepath.Base(dirPath))
-		if err := copyDirectory(dirPath, destDirPath); err != nil {
+		if err := CopyDir(dirPath, destDirPath); err != nil {
 			return err
 		}
 	}
@@ -33,8 +33,8 @@ func CopyPaths(filePaths, dirPaths []string, destDir string) error {
 	return nil
 }
 
-// copyFile copies a single file from src to dst.
-func copyFile(src, dst string) error {
+// CopyFile copies a single file from src to dst.
+func CopyFile(src, dst string) error {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return fmt.Errorf("failed to open source file: %w", err)
@@ -53,8 +53,8 @@ func copyFile(src, dst string) error {
 	return nil
 }
 
-// copyDirectory recursively copies a directory from src to dst.
-func copyDirectory(src, dst string) error {
+// CopyDir recursively copies a directory from src to dst.
+func CopyDir(src, dst string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -69,6 +69,6 @@ func copyDirectory(src, dst string) error {
 		if info.IsDir() {
 			return os.MkdirAll(destPath, info.Mode())
 		}
-		return copyFile(path, destPath)
+		return CopyFile(path, destPath)
 	})
 }

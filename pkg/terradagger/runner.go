@@ -70,6 +70,7 @@ type RuntWithExportOptions struct {
 	// CustomDestinationPathInHost is the custom path in the host where the file or directory will be exported.
 	// If this is not set, the default path will be used.
 	CustomDestinationPathInHost string
+	PersistDataInHost           bool
 }
 
 func (r *RunnerImpl) RunWithExport(c *ClientInstance, options *RuntWithExportOptions) error {

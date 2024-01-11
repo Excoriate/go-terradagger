@@ -54,6 +54,13 @@ type ExportFromContainerOptions struct {
 	FailIfNotExistInContainer  bool
 	OverrideIfExistInHost      bool
 	OverrideIfExistInContainer bool
+	ExportBackupOptions        *ExportBackupOptions
+}
+
+type ExportBackupOptions struct {
+	FilesToBackup    []string
+	DirsToBackup     []string
+	BackupIdentifier string
 }
 
 type EnvVarOptions struct {
@@ -140,6 +147,8 @@ type ExcludeOptions struct {
 
 type containerHostInteropConfig struct {
 	transferToHost               *DataTransferToHost
+	backupToHost                 *DataBackupInHost
+	isBackupInHostEnabled        bool
 	isTransferToHostEnabled      bool
 	transferToContainer          *DataTransferToContainer
 	isTransferToContainerEnabled bool
@@ -412,6 +421,29 @@ func (i *InstanceImpl) Configure(options *ClientOptions) (*InstanceConfig, error
 	if exportCfg != nil {
 		instanceCfg.runtime.containerHostInterop.transferToHost = exportCfg
 		instanceCfg.runtime.containerHostInterop.isTransferToHostEnabled = true
+	}
+
+	// 10 Configure export backup options
+	backupCfg, err := clientConfigurator.ConfigureExportBackup(&ConfigureExportBackupOptions{
+		ParamOptions:     options.ExportFromContainer.ExportBackupOptions,
+		ExportPathInHost: instanceCfg.Paths.ExportPathAbs,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to Configure the terradagger instance, the configuration of the export backup failed: %w", err)
+	}
+
+	if backupCfg != nil {
+		// Create the backup dir.
+		if _, err = i.td.dirManagerClient.CreateTerraDaggerDir(&CreateTerraDaggerDirOptions{
+			TerraDaggerPathResolved: backupCfg.BackupPathInHostAbs,
+			SkipCreationIfExist:     true,
+		}); err != nil {
+			return nil, fmt.Errorf("failed to Configure the terradagger instance, the creation of the backup dir failed: %w", err)
+		}
+
+		instanceCfg.runtime.containerHostInterop.backupToHost = backupCfg
+		instanceCfg.runtime.containerHostInterop.isBackupInHostEnabled = true
 	}
 
 	// 10. Import from container to host (files and dirs)

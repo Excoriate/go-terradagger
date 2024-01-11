@@ -21,6 +21,7 @@ type TransferToContainer struct {
 type TransferToHost struct {
 	SourcePathInContainer    string
 	DestinationPathInHostAbs string
+	BackupPathInHostAbs      string
 }
 
 type DataTransferToContainer struct {
@@ -33,6 +34,18 @@ type DataTransferToHost struct {
 	WorkDirPath string
 	Files       []TransferToHost
 	Dirs        []TransferToHost
+}
+
+type DataBackupInHost struct {
+	BackupPathInHostAbs string
+	Files               []*DataBackupContent
+	Dirs                []*DataBackupContent
+	ID                  string
+}
+
+type DataBackupContent struct {
+	SourcePathAbs      string
+	DestinationPathAbs string
 }
 
 // type DataTransferToHost struct {

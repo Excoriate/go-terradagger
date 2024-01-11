@@ -321,5 +321,19 @@ func (td *TD) Execute(instance *ClientInstance, options *RunOptions) error {
 		return r.RunOnly(instance)
 	}
 
-	return r.RunWithExport(instance, &RuntWithExportOptions{})
+	err := r.RunWithExport(instance, &RuntWithExportOptions{})
+	if err != nil {
+		return err
+	}
+
+	if !transferCfg.isBackupInHostEnabled {
+		return nil
+	}
+
+	// Implement the backup manager.
+	bc := NewBacker(td)
+	return bc.BackupManaged(&BackupOptions{
+		Files: transferCfg.backupToHost.Files,
+		Dirs:  transferCfg.backupToHost.Dirs,
+	})
 }
