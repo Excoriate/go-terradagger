@@ -6,36 +6,7 @@ import (
 	"path/filepath"
 )
 
-type DirUtilities interface {
-	GetHomeDir() string
-	GetCurrentDir() string
-	DirExist(path string) bool
-	DirExistE(path string) error
-	IsValidDirE(path string) error
-	IsValidDirRelative(path string) error
-	IsValidDirAbsolute(path string) error
-	isValidDirCommon(path string) error
-	DirExistAndHasContent(dirPath string) error
-	DeleteDirE(dirPath string) error
-}
-
-type DirUtils struct{}
-
-func (du *DirUtils) GetHomeDir() string {
-	homeDir, _ := os.UserHomeDir()
-	return homeDir
-}
-
-func NewDirUtils() DirUtilities {
-	return &DirUtils{}
-}
-
-func (du *DirUtils) GetCurrentDir() string {
-	currentDir, _ := os.Getwd()
-	return currentDir
-}
-
-func (du *DirUtils) DirExist(path string) bool {
+func DirExist(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
@@ -43,7 +14,7 @@ func (du *DirUtils) DirExist(path string) bool {
 	return info.IsDir()
 }
 
-func (du *DirUtils) DirExistE(path string) error {
+func DirExistE(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -56,30 +27,7 @@ func (du *DirUtils) DirExistE(path string) error {
 	return nil
 }
 
-func (du *DirUtils) DeleteDirE(dirPath string) error {
-	if dirPath == "" {
-		return fmt.Errorf("directory path cannot be empty")
-	}
-
-	currentDir, _ := os.Getwd()
-
-	_, err := os.Stat(dirPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("directory %s does not exist in current directory %s", dirPath, currentDir)
-		}
-
-		return fmt.Errorf("unexpected error when checking the directory %s: %v", dirPath, err)
-	}
-
-	if err := os.RemoveAll(dirPath); err != nil {
-		return fmt.Errorf("failed to delete directory %s: %v", dirPath, err)
-	}
-
-	return nil
-}
-
-func (du *DirUtils) IsValidDirE(path string) error {
+func IsValidDirE(path string) error {
 	// Clean the path to remove any unnecessary parts.
 	cleanPath := filepath.Clean(path)
 
@@ -104,7 +52,7 @@ func (du *DirUtils) IsValidDirE(path string) error {
 	return nil
 }
 
-func (du *DirUtils) DirExistAndHasContent(dirPath string) error {
+func DirExistAndHasContent(dirPath string) error {
 	if dirPath == "" {
 		return fmt.Errorf("directory path cannot be empty")
 	}
@@ -118,41 +66,6 @@ func (du *DirUtils) DirExistAndHasContent(dirPath string) error {
 		}
 
 		return fmt.Errorf("unexpected error when checking the directory %s: %v", dirPath, err)
-	}
-
-	return nil
-}
-
-func (du *DirUtils) IsValidDirRelative(path string) error {
-	if filepath.IsAbs(path) {
-		return fmt.Errorf("expected relative path, but got absolute path: %s", path)
-	}
-
-	return du.isValidDirCommon(path)
-}
-
-func (du *DirUtils) IsValidDirAbsolute(path string) error {
-	if !filepath.IsAbs(path) {
-		return fmt.Errorf("expected absolute path, but got relative path: %s", path)
-	}
-
-	return du.isValidDirCommon(path)
-}
-
-// isValidDirCommon is a helper function containing the shared logic for path validation.
-func (du *DirUtils) isValidDirCommon(path string) error {
-	cleanPath := filepath.Clean(path)
-
-	info, err := os.Stat(cleanPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("path does not exist: %s, error: %w", cleanPath, err)
-		}
-		return fmt.Errorf("failed to stat the path: %w", err)
-	}
-
-	if !info.IsDir() {
-		return fmt.Errorf("path is not a directory: %s", cleanPath)
 	}
 
 	return nil

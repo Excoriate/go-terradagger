@@ -1,50 +1,23 @@
 package erroer
 
-import "fmt"
+const ErrTerraDaggerInvalidArgumentErrorPrefix = "Invalid argument error: "
 
 type ErrTerraDaggerInvalidArgumentError struct {
 	ErrWrapped error
-	Details    string
+	Msg        string
 }
 
 func (e *ErrTerraDaggerInvalidArgumentError) Error() string {
-	return fmt.Sprintf("The argument is either invalid, missing or it's not supported by TerraDagger: %s: %s",
-		e.Details, e.ErrWrapped)
+	if e.ErrWrapped != nil {
+		return ErrTerraDaggerInvalidArgumentErrorPrefix + e.Msg + ": " + e.ErrWrapped.Error()
+	}
+
+	return ErrTerraDaggerInvalidArgumentErrorPrefix + e.Msg
 }
 
-type ErrTerraDaggerConfigurationError struct {
-	ErrWrapped error
-	Details    string
-}
-
-func (e *ErrTerraDaggerConfigurationError) Error() string {
-	return fmt.Sprintf("The TerraDagger configuration is invalid. The job failed to start: %s: %s",
-		e.Details, e.ErrWrapped)
-}
-
-type ErrTerraDaggerInvalidMountPath struct {
-	ErrWrapped error
-	MountPath  string
-}
-
-func (e *ErrTerraDaggerInvalidMountPath) Error() string {
-	return fmt.Sprintf("The mount path is invalid: %s: %s", e.MountPath, e.ErrWrapped)
-}
-
-type ErrTerraDaggerInitializationError struct {
-	ErrWrapped error
-	Details    string
-}
-
-func (e *ErrTerraDaggerInitializationError) Error() string {
-	return fmt.Sprintf("The TerraDagger initialization failed: %s: %s", e.Details, e.ErrWrapped)
-}
-
-type ErrTerraDaggerContainerFailedToCreate struct {
-	ErrWrapped error
-	Image      string
-}
-
-func (e *ErrTerraDaggerContainerFailedToCreate) Error() string {
-	return fmt.Sprintf("The TerraDagger container (dagger) with the image '%s' failed to create: %s", e.Image, e.ErrWrapped)
+func NewErrTerraDaggerInvalidArgumentError(errMsg string, err error) *ErrTerraDaggerInvalidArgumentError {
+	return &ErrTerraDaggerInvalidArgumentError{
+		ErrWrapped: err,
+		Msg:        errMsg,
+	}
 }

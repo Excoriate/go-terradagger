@@ -42,14 +42,3 @@ func MixSlices(slices ...[]string) []string {
 	}
 	return mixed
 }
-
-func MergeMaps(maps ...map[string]string) map[string]string {
-	mixed := make(map[string]string)
-	for _, maps := range maps {
-		for key, value := range maps {
-			// normalise the key and the value by removing double quotes
-			mixed[RemoveDoubleQuotes(key)] = RemoveDoubleQuotes(value)
-		}
-	}
-	return mixed
-}

@@ -2,7 +2,6 @@ package tf
 
 import (
 	"context"
-	"os"
 
 	"github.com/Excoriate/go-terradagger/cli/internal/tui"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
@@ -36,41 +35,29 @@ var Cmd = &cobra.Command{
 
 		ux.Title.ShowTitle("TerraDagger CLI")
 
-		td, err := terradagger.New(ctx, &terradagger.Options{
+		td := terradagger.New(ctx, &terradagger.Options{
 			Workspace: "../",
 		})
 
-		defer td.DaggerBackend.Close()
+		terraformOptions := terraform.WithOptions(td, &terraform.TfOptions{
+			ModulePath: "test-data/terraform/root-module-1",
+		})
 
-		if err != nil {
+		// Start the engine (and the Dagger backend)
+		if err := td.StartEngine(); err != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Unable to create a new terradagger client",
+				Message: "Unable to start the Dagger engine",
 				Error:   err,
 			})
-			os.Exit(1)
 		}
 
-		terraformOptions := &terraform.Options{
-			TerraformModulePath: "test-data/terraform/root-module-1",
-		}
+		defer td.Engine.GetEngine().Close()
 
-		initErr := terraform.Init(td, terraformOptions, nil)
+		_, initErr := terraform.Init(td, terraformOptions, nil)
 		if initErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
 				Message: "Unable to run terraform init",
 				Error:   initErr,
-			})
-		}
-		planErr := terraform.Plan(td, terraformOptions, &terraform.PlanOptions{
-			Vars: map[string]interface{}{
-				"is_enabled": true,
-			},
-		})
-
-		if planErr != nil {
-			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Unable to run terraform plan",
-				Error:   planErr,
 			})
 		}
 

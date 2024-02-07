@@ -1,77 +1,88 @@
 package terraform
 
 import (
+	"fmt"
 	"path/filepath"
-
-	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 
 	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
+
+	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 )
 
-type Options struct {
-	// TerraformSRC is the root directory of the terraform code
-	TerraformSRC string
-	// TerraformModulePath is the directory of the terraform code
-	TerraformModulePath string
-	// TerraformVersion is the version of terraform to use
-	// By default, it'll use the latest version
-	TerraformVersion string
-	// AutoInjectTFVAREnvVars is a flag to scan the environment variables and inject them into the terraform code
+type tfOptions struct {
+	td *terradagger.TD
+	// modulePath is the directory of the terraform code
+	modulePath string
+	// terraformVersion is the version of terraform to use
+	terraformVersion string
+	// envVarsAutoInjectFromHost is a flag to scan the environment variables and inject them into the terraform code
 	// The variables that'll be injected are the ones that start with TF_VAR_
-	AutoInjectTFVAREnvVars bool
-	// AutoInjectEnvVarsFromHost is a flag to scan the environment variables and inject them into the terraform code
-	AutoInjectEnvVarsFromHost bool
+	envVarsAutoInjectFromHost bool
+	// envVarsAutoInjectTFVars is a flag to scan the environment variables and inject them into the terraform code
+	envVarsAutoInjectTFVars bool
 	// TerraformCustomContainerImage is the custom image to use for the terraform container
-	// If it's passed, it'll override the default image hashicorp/terraform
+	// enableSSHPrivateGit is a flag to use SSH for the modules
+	enableSSHPrivateGit bool
+}
+
+type TfOptions struct {
+	// ModulePath is the directory of the terraform code
+	ModulePath string
+	// TerraformVersion is the version of terraform to use
+	TerraformVersion string
+	// EnvVarsAutoInjectFromHost is a flag to scan the environment variables and inject them into the terraform code
+	// The variables that'll be injected are the ones that start with TF_VAR_
+	EnvVarsAutoInjectFromHost bool
+	// EnvVarsAutoInjectTFVars is a flag to scan the environment variables and inject them into the terraform code
+	EnvVarsAutoInjectTFVars bool
+	// TerraformCustomContainerImage is the custom image to use for the terraform container
 	TerraformCustomContainerImage string
+	// EnableSSHPrivateGit is a flag to use SSH for the modules
+	EnableSSHPrivateGit bool
 }
 
-type OptionsValidator interface {
-	validate() error
+type TfGlobalOptions interface {
+	GetModulePath() string
+	GetTerraformVersion() string
+	IsModulePathValid() error
+	ModulePathHasTerraformCode() error
 }
 
-type CommandOptionsValidator interface {
-	validateCMDOptions(options *Options) error
+func WithOptions(td *terradagger.TD, o *TfOptions) TfGlobalOptions {
+	return &tfOptions{
+		td:                        td,
+		terraformVersion:          o.TerraformVersion,
+		envVarsAutoInjectFromHost: o.EnvVarsAutoInjectFromHost,
+		envVarsAutoInjectTFVars:   o.EnvVarsAutoInjectTFVars,
+		enableSSHPrivateGit:       o.EnableSSHPrivateGit,
+		modulePath:                o.ModulePath,
+	}
 }
 
-func (o *Options) validate() error {
-	dirUtils := utils.DirUtils{}
-	if o.TerraformModulePath == "" {
-		return &erroer.ErrTerraformOptionsAreInvalid{
-			Details: "the terraform directory is required, but it was not passed",
-		}
+func (o *tfOptions) GetModulePath() string {
+	return o.modulePath
+}
+
+func (o *tfOptions) GetTerraformVersion() string {
+	return o.terraformVersion
+}
+
+func (o *tfOptions) IsModulePathValid() error {
+	if o.GetModulePath() == "" {
+		return erroer.NewErrTerraDaggerInvalidArgumentError("the module path is empty", nil)
 	}
 
-	if o.TerraformSRC == "" {
-		return &erroer.ErrTerraformOptionsAreInvalid{
-			Details: "the terradagger root directory is required, but it was not passed",
-		}
-	}
+	srcAbsolute := o.td.Config.GetWorkspace()
+	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
 
-	terraformDir := filepath.Join(o.TerraformSRC, o.TerraformModulePath)
-
-	if err := dirUtils.IsValidDirE(terraformDir); err != nil {
-		return &erroer.ErrTerraformOptionsAreInvalid{
-			Details:    "the terraform directory is invalid",
-			ErrWrapped: err,
-		}
-	}
-
-	if o.AutoInjectEnvVarsFromHost && o.AutoInjectTFVAREnvVars {
-		return &erroer.ErrTerraformOptionsAreInvalid{
-			Details: "the terraform options are invalid. You cannot use both AutoInjectEnvVarsFromHost and AutoInjectTFVAREnvVars at the same time",
-		}
+	if err := utils.IsValidDirE(modulePathFull); err != nil {
+		return erroer.NewErrTerraDaggerInvalidArgumentError(fmt.Sprintf("the module path %s is not valid", modulePathFull), err)
 	}
 
 	return nil
 }
 
-func setDefaultOptions(td *terradagger.TD, options *Options) {
-	if options == nil {
-		options = &Options{}
-	}
-
-	options.TerraformSRC = td.Config.TerraDagger.Paths.Workspace.SRC
-	options.TerraformVersion = "1.6.1" // FIXME: Make these defaults configurable.
+func (o *tfOptions) ModulePathHasTerraformCode() error {
+	return nil
 }
