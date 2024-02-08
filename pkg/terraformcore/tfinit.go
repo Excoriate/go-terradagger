@@ -1,4 +1,4 @@
-package terraform
+package terraformcore
 
 import (
 	"fmt"
@@ -20,40 +20,40 @@ type InitOptions struct {
 	Upgrade bool
 }
 
-type initOptions interface {
+type InitArgs interface {
 	GetArgNoColor() []string
 	GetArgBackendConfigFile() []string
 	GetArgUpgrade() []string
 }
 
-func (i *InitOptions) GetArgNoColor() []string {
+func (ti *InitOptions) GetArgNoColor() []string {
 	arg := []string{"-no-color"}
-	if i.NoColor {
+	if ti.NoColor {
 		return arg
 	}
 
 	return []string{}
 }
 
-func (i *InitOptions) GetArgBackendConfigFile() []string {
-	arg := []string{"-backend-config", i.BackendConfigFile}
-	if i.BackendConfigFile != "" {
+func (ti *InitOptions) GetArgBackendConfigFile() []string {
+	arg := []string{"-backend-config", ti.BackendConfigFile}
+	if ti.BackendConfigFile != "" {
 		return arg
 	}
 
 	return []string{}
 }
 
-func (i *InitOptions) GetArgUpgrade() []string {
+func (ti *InitOptions) GetArgUpgrade() []string {
 	arg := []string{"-upgrade"}
-	if i.Upgrade {
+	if ti.Upgrade {
 		return arg
 	}
 
 	return []string{}
 }
 
-func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
 		return nil, nil, err
 	}
@@ -67,7 +67,7 @@ func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dag
 		return nil, nil, err
 	}
 
-	cmdCfg := NewTerraformCommand()
+	cmdCfg := NewTerraformCommandConfig()
 
 	tfCommandStr := terradagger.BuildCommand(cmdCfg.GetEntryPoint(),
 		cmdCfg.GetInitCommand(), args)
@@ -97,8 +97,8 @@ func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dag
 	return tfContainer, runtime, nil
 }
 
-func InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (string, error) {
-	tfInitContainer, runtime, err := Init(td, tfOpts, options)
+func (i *IasC) InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs) (string, error) {
+	tfInitContainer, runtime, err := i.Init(td, tfOpts, options)
 	if err != nil {
 		return "", err
 	}

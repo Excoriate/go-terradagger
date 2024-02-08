@@ -1,4 +1,4 @@
-package terraform
+package terraformcore
 
 import (
 	"fmt"
@@ -47,7 +47,6 @@ type TfGlobalOptions interface {
 	GetTerraformVersion() string
 	IsModulePathValid() error
 	ModulePathHasTerraformCode() error
-
 	GetEnableSSHPrivateGit() bool
 }
 

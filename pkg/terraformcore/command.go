@@ -1,4 +1,4 @@
-package terraform
+package terraformcore
 
 var (
 	tfEntryPoint      = "terraform"
@@ -11,7 +11,7 @@ var (
 
 type TfCmd struct{}
 
-type Command interface {
+type CommandConfig interface {
 	GetEntryPoint() string
 	GetInitCommand() string
 	GetPlanCommand() string
@@ -20,7 +20,7 @@ type Command interface {
 	GetValidateCommand() string
 }
 
-func NewTerraformCommand() Command {
+func NewTerraformCommandConfig() CommandConfig {
 	return &TfCmd{}
 }
 

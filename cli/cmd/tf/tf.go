@@ -3,9 +3,11 @@ package tf
 import (
 	"context"
 
+	"github.com/Excoriate/go-terradagger/pkg/terraform"
+
 	"github.com/Excoriate/go-terradagger/cli/internal/tui"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
-	"github.com/Excoriate/go-terradagger/pkg/terraform"
+	"github.com/Excoriate/go-terradagger/pkg/terraformcore"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -39,7 +41,7 @@ var Cmd = &cobra.Command{
 			Workspace: "../",
 		})
 
-		terraformOptions := terraform.WithOptions(td, &terraform.TfOptions{
+		terraformOptions := terraformcore.WithOptions(td, &terraformcore.TfOptions{
 			ModulePath: "test-data/terraform/root-module-1",
 		})
 
@@ -53,25 +55,15 @@ var Cmd = &cobra.Command{
 
 		defer td.Engine.GetEngine().Close()
 
-		_, initErr := terraform.InitE(td, terraformOptions, nil)
+		_, initErr := terraform.InitE(td, terraformOptions, terraform.InitOptions{})
+		// Run terraform init
 		if initErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Unable to run terraform init",
+				Message: "Error initializing terraform",
 				Error:   initErr,
 			})
 		}
 
-		// _ = terraform.Apply(td, terraformOptions, &terraform.ApplyOptions{
-		// 	Vars: map[string]interface{}{
-		// 		"is_enabled": true,
-		// 	},
-		// 	PreserveTFState: true, // Preserve the state file.
-		// })
-		// _ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
-		// 	Vars: map[string]interface{}{
-		// 		"is_enabled": true,
-		// 	},
-		// })
 	},
 }
 

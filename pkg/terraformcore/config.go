@@ -1,4 +1,4 @@
-package terraform
+package terraformcore
 
 var (
 	tfDefaultCacheDir            = ".terraform"
