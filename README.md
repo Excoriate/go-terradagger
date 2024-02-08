@@ -88,15 +88,3 @@ _ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
 ## Contributing
 
 Please read our [contributing guide](./CONTRIBUTING.md).
-
-## Community
-
-Feel free to contact me through:
-
-- 📧 [Email](mailto:alex@ideaup.cl)
-- 🧳 [Linkedin](https://www.linkedin.com/in/alextorresruiz/)
-
-
-<a href="https://github.com/Excoriate/stilettov2/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Excoriate/stiletto" />
-</a>
