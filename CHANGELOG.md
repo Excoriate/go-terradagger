@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.2.0](https://github.com/Excoriate/go-terradagger/compare/v1.1.0...v1.2.0) (2024-02-08)
+
+
+### Features
+
+* Add advanced export APIs ([3729d62](https://github.com/Excoriate/go-terradagger/commit/3729d621bf4060281dee8a00f70fd6937ba5c4cd))
+* Add backup option for the exporter API ([e99eed0](https://github.com/Excoriate/go-terradagger/commit/e99eed0706a18e405c369c60df712670128b9fef))
+* Add security group module ([814faf6](https://github.com/Excoriate/go-terradagger/commit/814faf62b6fbf65c6eccb34d4fbd2b7b10993086))
+* add support for forwarding unix sockets, and ssh authentication ([e4440ff](https://github.com/Excoriate/go-terradagger/commit/e4440ff5e6b57057eaff494393369053691d5bb8))
+* add support for terragrunt ([6270a94](https://github.com/Excoriate/go-terradagger/commit/6270a94ee65142d820af6efc031763f030235bc4))
+* Add terraform core apis to be reused by different iaac tools ([9f2f0a1](https://github.com/Excoriate/go-terradagger/commit/9f2f0a150f491fe65910918c477fc333adb1d1ad))
+* add terraformcore api for plan ([9a00148](https://github.com/Excoriate/go-terradagger/commit/9a00148fa8a228d6cd258ea534aad620bddb30fc))
+* Add tests for dirs.go in TerraDagger ([9854117](https://github.com/Excoriate/go-terradagger/commit/9854117a981626255febd61222546c118f39cb55))
+
+
+### Refactoring
+
+* Add client configuration API ([d821f58](https://github.com/Excoriate/go-terradagger/commit/d821f58cc538a2a6ce7fbd34f685d57197cc626c))
+* Add export and import functionality ([8f149d8](https://github.com/Excoriate/go-terradagger/commit/8f149d8f36a585bb8d4cff25cdc88e897eeb0ca4))
+* Add import and advanced export ([c57772b](https://github.com/Excoriate/go-terradagger/commit/c57772bb19e5b4874556953d29e9c493552c418c))
+* Add instance validator interface ([38d4045](https://github.com/Excoriate/go-terradagger/commit/38d4045671c9c3002df4e77a3036b34cdc43ac74))
+* add simplified version of the tfinit command ([c8e1f9d](https://github.com/Excoriate/go-terradagger/commit/c8e1f9dba850becc6a32b4a898a1c1e03c9340e7))
+* Add unit tests for commands, args and command's package ([79ae9e5](https://github.com/Excoriate/go-terradagger/commit/79ae9e5734bd00d833d2d73b465e866d583b81c2))
+* full rewrite of terradagger ([ea40e68](https://github.com/Excoriate/go-terradagger/commit/ea40e68168b2de9696ec21e2cf838073d4c9a674))
+* New logic ([134f531](https://github.com/Excoriate/go-terradagger/commit/134f5315282164b68ad499444d904f5ffdfaa7d1))
+
+
+### Other
+
+* adjust dead link in docs ([db3b788](https://github.com/Excoriate/go-terradagger/commit/db3b788fe9aacaa41054256eac9aed737493ba52))
+
 ## [1.1.0](https://github.com/Excoriate/go-terradagger/compare/v1.0.0...v1.1.0) (2023-12-24)
 
 
