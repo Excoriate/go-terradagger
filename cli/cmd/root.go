@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/Excoriate/go-terradagger/cli/cmd/tf"
@@ -12,7 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var srcDir string
+var (
+	workspace string
+	module    string
+	tfVersion string
+)
 var rootCmd = &cobra.Command{
 	Use:   "terradagger",
 	Short: "A portable way to run your infrastructure-as-code in Containers, powered by Dagger.",
@@ -22,12 +25,10 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&srcDir, "src-dir", "s", "", "The directory containing your Daggerfile and Terraform code.")
-	_ = viper.BindPFlag("src-dir", rootCmd.PersistentFlags().Lookup("src-dir"))
-
-	if err := rootCmd.MarkPersistentFlagRequired("src-dir"); err != nil {
-		log.Fatal(err)
-	}
+	rootCmd.PersistentFlags().StringVarP(&workspace, "workspace", "w", "", "The workspace to run the Dagger engine in")
+	rootCmd.PersistentFlags().StringVarP(&module, "module", "m", "", "The module to run the Dagger engine in")
+	rootCmd.PersistentFlags().StringVarP(&tfVersion, "tf-version", "v", "", "The terraform version to use")
+	_ = viper.BindPFlags(rootCmd.PersistentFlags())
 
 	rootCmd.AddCommand(tf.Cmd)
 }

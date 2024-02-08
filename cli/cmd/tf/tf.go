@@ -13,14 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	terraformDir        string
-	terraformVars       map[string]string
-	terraformTFVarFiles []string
-	terraformVersion    string
-	all                 bool
-)
-
 var Cmd = &cobra.Command{
 	Use:   "tf",
 	Short: "Execute terraform CI Jobs using Dagger",
@@ -38,7 +30,7 @@ var Cmd = &cobra.Command{
 		ux.Title.ShowTitle("TerraDagger CLI")
 
 		td := terradagger.New(ctx, &terradagger.Options{
-			Workspace: "../",
+			Workspace: viper.GetString("workspace"),
 		})
 
 		// Start the engine (and the Dagger backend)
@@ -72,9 +64,10 @@ var Cmd = &cobra.Command{
 		// -------------------------------
 		terragruntOptions :=
 			terraformcore.WithOptions(td, &terraformcore.TfOptions{
-				ModulePath:                   "test/terraform/terragrunt-2",
+				ModulePath:                   viper.GetString("module"),
 				EnableSSHPrivateGit:          true,
-				EnvVarsToInjectByKeyFromHost: []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"},
+				TerraformVersion:             viper.GetString("tf-version"),
+				EnvVarsToInjectByKeyFromHost: []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"},
 			})
 
 		_, initTgErr := terragrunt.InitE(td, terragruntOptions, terragrunt.InitOptions{}, terragrunt.GlobalOptions{})
@@ -93,27 +86,4 @@ var Cmd = &cobra.Command{
 			})
 		}
 	},
-}
-
-func AddFlags() {
-	Cmd.PersistentFlags().BoolVarP(&all, "all", "", false, "Execute all recipes in the 'examples' folder.")
-	Cmd.PersistentFlags().StringVarP(&terraformDir, "terraform-dir", "", "",
-		"The directory where the terraform code resides. "+
-			"It is also the directory that'll be mounted into Dagger's container.")
-	Cmd.PersistentFlags().StringToStringVar(&terraformVars, "terraform-vars", map[string]string{},
-		"Variables to pass to terraform.")
-	Cmd.PersistentFlags().StringSliceVar(&terraformTFVarFiles, "terraform-tfvar-files", []string{},
-		"TFVar files to pass to terraform.")
-	Cmd.PersistentFlags().StringVarP(&terraformVersion, "terraform-version", "", "",
-		"The version of terraform to use.")
-
-	_ = viper.BindPFlag("all", Cmd.PersistentFlags().Lookup("all"))
-	_ = viper.BindPFlag("terraform-dir", Cmd.PersistentFlags().Lookup("terraform-dir"))
-	_ = viper.BindPFlag("terraform-vars", Cmd.PersistentFlags().Lookup("terraform-vars"))
-	_ = viper.BindPFlag("terraform-tfvar-files", Cmd.PersistentFlags().Lookup("terraform-tfvar-files"))
-	_ = viper.BindPFlag("terraform-version", Cmd.PersistentFlags().Lookup("terraform-version"))
-}
-
-func init() {
-	AddFlags()
 }
