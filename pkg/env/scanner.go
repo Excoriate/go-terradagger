@@ -25,22 +25,31 @@ func GetAllFromHost() map[string]string {
 func GetAllEnvVarsWithPrefix(prefix string) (map[string]string, error) {
 	result := make(map[string]string)
 
-	for _, env := range os.Environ() {
-		pair := strings.SplitN(env, "=", 2)
-		key := pair[0]
+	if prefix == "" {
+		return nil, fmt.Errorf("prefix cannot be empty")
+	}
 
+	allEnvs := GetAllFromHost()
+
+	for key, value := range allEnvs {
 		if strings.HasPrefix(key, prefix) {
-			value := pair[1]
-			if value == "" {
-				return nil, fmt.Errorf("environment variable %s has an empty value", key)
-			}
-			result[key] = utils.RemoveDoubleQuotes(value)
+			result[key] = value
 		}
 	}
 
-	if len(result) == 0 {
-		return nil, fmt.Errorf("no environment variables with the prefix %s found", prefix)
+	return result, nil
+}
+
+func GetEnvVarByKey(key string) (string, error) {
+	if key == "" {
+		return "", fmt.Errorf("key cannot be empty")
 	}
 
-	return result, nil
+	allEnvs := GetAllFromHost()
+
+	if val, ok := allEnvs[key]; ok {
+		return val, nil
+	}
+
+	return "", fmt.Errorf("environment variable %s does not exist", key)
 }

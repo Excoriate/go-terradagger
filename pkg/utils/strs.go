@@ -13,3 +13,9 @@ func RemoveDoubleQuotes(target string) string {
 func GetUUID() string {
 	return uuid.New().String()
 }
+
+func EscapeValues(value string) string {
+	// Perform necessary escaping here. This is a basic example.
+	// You might need a more comprehensive approach depending on your input.
+	return strings.ReplaceAll(value, "'", "\\'")
+}

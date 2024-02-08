@@ -1,6 +1,6 @@
 <h1 align="center">
-  <img alt="logo" src="https://dagger.io/img/astronaut.png" width="224px"/><br/>
-  TerraDagger 👨🏻‍🚀
+  <img alt="logo" src="docs/logo/terradagger-logo-2.png" width="450px"/><br/>
+  TerraDagger 🗡️
 </h1>
 <p align="center">An easy to understand GO library for building portables CI/CD pipelines (as code) using <b>Dagger</b> for your <b> infrastructure-as-code ☁️</b>.<br/><br/>
 

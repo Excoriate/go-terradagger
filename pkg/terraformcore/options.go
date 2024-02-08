@@ -18,17 +18,21 @@ type tfOptions struct {
 	modulePath string
 	// terraformVersion is the version of terraform to use
 	terraformVersion string
-	// envVarsAutoInjectFromHost is a flag to scan the environment variables and inject them into the terraform code
+	// mirrorAllEnvVarsFromHost is a flag to scan the environment variables and inject them into the terraform code
 	// The variables that'll be injected are the ones that start with TF_VAR_
-	envVarsAutoInjectFromHost bool
-	// envVarsAutoInjectTFVars is a flag to scan the environment variables and inject them into the terraform code
-	envVarsAutoInjectTFVars bool
+	mirrorAllEnvVarsFromHost bool
+	// autoDetectTFVarsFromHost is a flag to scan the environment variables and inject them into the terraform code
+	autoDetectTFVarsFromHost bool
+	// autoDetectAWSKeysFromHost is a flag to scan the environment variables and inject them into the terraform code
+	autoDetectAWSKeysFromHost bool
 	// customContainerImage is the custom image to use for the terraform container
 	customContainerImage string
 	// enableSSHPrivateGit is a flag to use SSH for the modules
 	enableSSHPrivateGit bool
 	// invalidateCache is a flag to invalidate the cache
 	invalidateCache bool
+	// envVarsToInjectByKeyFromHost is a slice of environment variables to inject into the container
+	envVarsToInjectByKeyFromHost []string
 }
 
 type TfOptions struct {
@@ -36,17 +40,21 @@ type TfOptions struct {
 	ModulePath string
 	// TerraformVersion is the version of terraform to use
 	TerraformVersion string
-	// EnvVarsAutoInjectFromHost is a flag to scan the environment variables and inject them into the terraform code
+	// MirrorAllEnvVarsFromHost is a flag to scan the environment variables and inject them into the terraform code
 	// The variables that'll be injected are the ones that start with TF_VAR_
-	EnvVarsAutoInjectFromHost bool
-	// EnvVarsAutoInjectTFVars is a flag to scan the environment variables and inject them into the terraform code
-	EnvVarsAutoInjectTFVars bool
+	MirrorAllEnvVarsFromHost bool
+	// AutoDetectTFVarsFromHost is a flag to scan the environment variables and inject them into the terraform code
+	AutoDetectTFVarsFromHost bool
+	// AutoDetectAWSKeysFromHost is a flag to scan the environment variables and inject them into the terraform code
+	AutoDetectAWSKeysFromHost bool
 	// CustomContainerImage is the custom image to use for the terraform container
 	CustomContainerImage string
 	// EnableSSHPrivateGit is a flag to use SSH for the modules
 	EnableSSHPrivateGit bool
 	// InvalidateCache is a flag to invalidate the cache
 	InvalidateCache bool
+	// EnvVarsToInjectByKeyFromHost is a slice of environment variables to inject into the container
+	EnvVarsToInjectByKeyFromHost []string
 }
 
 type TfGlobalOptions interface {
@@ -59,18 +67,24 @@ type TfGlobalOptions interface {
 
 	GetCustomContainerImage() string
 	GetInvalidateCache() bool
+	IsAutoDetectTFVarsFromHost() bool
+	IsAutoDetectAWSKeysFromHost() bool
+	IsMirrorAllEnvVarsFromHost() bool
+	GetEnvVarsToInjectByKeyFromHost() []string
 }
 
 func WithOptions(td *terradagger.TD, o *TfOptions) TfGlobalOptions {
 	return &tfOptions{
-		td:                        td,
-		terraformVersion:          o.TerraformVersion,
-		envVarsAutoInjectFromHost: o.EnvVarsAutoInjectFromHost,
-		envVarsAutoInjectTFVars:   o.EnvVarsAutoInjectTFVars,
-		enableSSHPrivateGit:       o.EnableSSHPrivateGit,
-		modulePath:                o.ModulePath,
-		customContainerImage:      o.CustomContainerImage,
-		invalidateCache:           o.InvalidateCache,
+		td:                           td,
+		terraformVersion:             o.TerraformVersion,
+		mirrorAllEnvVarsFromHost:     o.MirrorAllEnvVarsFromHost,
+		autoDetectTFVarsFromHost:     o.AutoDetectTFVarsFromHost,
+		autoDetectAWSKeysFromHost:    o.AutoDetectAWSKeysFromHost,
+		enableSSHPrivateGit:          o.EnableSSHPrivateGit,
+		modulePath:                   o.ModulePath,
+		customContainerImage:         o.CustomContainerImage,
+		invalidateCache:              o.InvalidateCache,
+		envVarsToInjectByKeyFromHost: o.EnvVarsToInjectByKeyFromHost,
 	}
 }
 
@@ -125,4 +139,20 @@ func (o *tfOptions) GetCustomContainerImage() string {
 
 func (o *tfOptions) GetInvalidateCache() bool {
 	return o.invalidateCache
+}
+
+func (o *tfOptions) IsAutoDetectTFVarsFromHost() bool {
+	return o.autoDetectTFVarsFromHost
+}
+
+func (o *tfOptions) IsAutoDetectAWSKeysFromHost() bool {
+	return o.autoDetectAWSKeysFromHost
+}
+
+func (o *tfOptions) IsMirrorAllEnvVarsFromHost() bool {
+	return o.mirrorAllEnvVarsFromHost
+}
+
+func (o *tfOptions) GetEnvVarsToInjectByKeyFromHost() []string {
+	return o.envVarsToInjectByKeyFromHost
 }

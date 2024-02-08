@@ -3,66 +3,61 @@ package terraformcore
 import (
 	"fmt"
 
-	"github.com/Excoriate/go-terradagger/pkg/config"
-
-	"github.com/Excoriate/go-terradagger/pkg/container"
-
 	"dagger.io/dagger"
-
+	"github.com/Excoriate/go-terradagger/pkg/config"
+	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
+
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
-type InitOptions struct {
-	// NoColor is a flag to disable colors in terraform output
-	NoColor bool
-	// BackendConfigFile is the path to the backend config file
-	BackendConfigFile string
-	// Upgrade is a flag to upgrade the modules and plugins
-	Upgrade bool
+type PlanOptions struct {
+	// RefreshOnly is a flag to only refresh the state. Equivalent to
+	// terraform plan -refresh-only
+	RefreshOnly bool
+	// TerraformVarFiles is a list of terraform var files to use
+	TerraformVarFiles []string
+	// Vars is a list of terraform vars to use
+	Vars []TFInputVariable
 }
 
-type InitArgs interface {
-	GetArgNoColor() []string
-	GetArgBackendConfigFile() []string
-	GetArgUpgrade() []string
+type PlanArgs interface {
+	GetArgRefreshOnly() []string
+	GetArgTerraformVarFiles() []string
+	GetArgVars() []string
 }
 
-func (ti *InitOptions) GetArgNoColor() []string {
-	arg := []string{"-no-color"}
-	if ti.NoColor {
-		return arg
+func (po *PlanOptions) GetArgRefreshOnly() []string {
+	if po.RefreshOnly {
+		return []string{"-refresh-only"}
 	}
-
 	return []string{}
 }
 
-func (ti *InitOptions) GetArgBackendConfigFile() []string {
-	arg := []string{"-backend-config", ti.BackendConfigFile}
-	if ti.BackendConfigFile != "" {
-		return arg
+func (po *PlanOptions) GetArgTerraformVarFiles() []string {
+	var args []string
+	for _, file := range po.TerraformVarFiles {
+		args = append(args, fmt.Sprintf("-var-file=%s", file))
 	}
-
-	return []string{}
+	return args
 }
 
-func (ti *InitOptions) GetArgUpgrade() []string {
-	arg := []string{"-upgrade"}
-	if ti.Upgrade {
-		return arg
+func (po *PlanOptions) GetArgVars() []string {
+	var args []string
+	for _, v := range po.Vars {
+		args = append(args, fmt.Sprintf("-var '%s=%s'", v.Name, utils.EscapeValues(v.Value)))
 	}
-
-	return []string{}
+	return args
 }
 
-func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs, extraArgs []string) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
 		return nil, nil, err
 	}
 
 	var args []string
 	if options != nil {
-		args = utils.MergeSlices(options.GetArgUpgrade(), options.GetArgNoColor(), options.GetArgBackendConfigFile())
+		args = utils.MergeSlices(options.GetArgVars(), options.GetArgTerraformVarFiles(), options.GetArgRefreshOnly())
 	}
 
 	if i.Config.GetBinary() == config.IacToolTerraform {
@@ -83,13 +78,13 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 	if i.Config.GetBinary() == config.IacToolTerragrunt {
 		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetInitCommand(),
+			Command:     cmdCfg.GetPlanCommand(),
 			CommandArgs: args,
 		})
 	} else {
 		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetInitCommand(),
+			Command:     cmdCfg.GetPlanCommand(),
 			CommandArgs: args,
 		})
 	}
@@ -145,8 +140,8 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 	return tfContainer, runtime, nil
 }
 
-func (i *IasC) InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (string, error) {
-	tfInitContainer, runtime, err := i.Init(td, tfOpts, options, extraArgs)
+func (i *IasC) PlanE(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs, extraArgs []string) (string, error) {
+	tfInitContainer, runtime, err := i.Plan(td, tfOpts, options, extraArgs)
 	if err != nil {
 		return "", err
 	}

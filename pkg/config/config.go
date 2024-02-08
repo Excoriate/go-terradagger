@@ -13,6 +13,7 @@ const (
 	terraDaggerDir       = ".terradagger"
 	mountPrefix          = "/mnt"
 	terraDaggerExportDir = "export"
+	awsKeysPrefix        = "AWS_"
 )
 
 var (
@@ -37,8 +38,11 @@ type Config interface {
 	GetHomeDir() string
 	GetHostEnvVars() map[string]string
 	GetTerraformEnvVars() map[string]string
+	GetAWSEnvVars() map[string]string
 	GetAllEnvVars() map[string]string
 	GetAllowedTerraformFileExtensions() []string
+
+	GetEnvVarsByKeys(keys []string) map[string]string
 }
 
 type Options struct {
@@ -123,4 +127,19 @@ func (o *Options) GetAllEnvVars() map[string]string {
 
 func (o *Options) GetAllowedTerraformFileExtensions() []string {
 	return allowedTerraformFileExtensions
+}
+
+func (o *Options) GetAWSEnvVars() map[string]string {
+	awsVars, _ := env.GetAllEnvVarsWithPrefix(awsKeysPrefix)
+	return awsVars
+}
+
+func (o *Options) GetEnvVarsByKeys(keys []string) map[string]string {
+	envVars := map[string]string{}
+	for _, key := range keys {
+		envVar, _ := env.GetEnvVarByKey(key)
+		envVars[key] = envVar
+	}
+
+	return envVars
 }

@@ -72,8 +72,9 @@ var Cmd = &cobra.Command{
 		// -------------------------------
 		terragruntOptions :=
 			terraformcore.WithOptions(td, &terraformcore.TfOptions{
-				ModulePath:          "test/terraform/terragrunt-2",
-				EnableSSHPrivateGit: true,
+				ModulePath:                   "test/terraform/terragrunt-2",
+				EnableSSHPrivateGit:          true,
+				EnvVarsToInjectByKeyFromHost: []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"},
 			})
 
 		_, initTgErr := terragrunt.InitE(td, terragruntOptions, terragrunt.InitOptions{}, terragrunt.GlobalOptions{})
@@ -81,6 +82,14 @@ var Cmd = &cobra.Command{
 			ux.Msg.ShowError(tui.MessageOptions{
 				Message: "Error initializing terragrunt",
 				Error:   initTgErr,
+			})
+		}
+
+		_, planTgErr := terragrunt.PlanE(td, terragruntOptions, terragrunt.PlanOptions{}, terragrunt.GlobalOptions{})
+		if planTgErr != nil {
+			ux.Msg.ShowError(tui.MessageOptions{
+				Message: "Error planning terragrunt",
+				Error:   planTgErr,
 			})
 		}
 	},

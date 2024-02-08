@@ -18,6 +18,7 @@ type Runtime interface {
 	AddCommands(commands []Command, container *dagger.Container) *dagger.Container
 	RunAndGetStdout(container *dagger.Container) (string, error)
 	ForwardUnixSockets(container *dagger.Container) *dagger.Container
+	AddEnvVars(envVars map[string]string, container *dagger.Container) *dagger.Container
 }
 
 func New(container Container, td *terradagger.TD) Runtime {
@@ -80,4 +81,12 @@ func (r *runtime) ForwardUnixSockets(container *dagger.Container) *dagger.Contai
 	return container.WithEnvVariable(r.container.GetGitSSHEnvVar().Name, r.container.GetGitSSHEnvVar().Value).
 		WithEnvVariable(r.container.GetSSHAuthSockEnvVar().Name, r.container.GetSSHAuthSockEnvVar().Value).
 		WithUnixSocket(r.container.GetSSHAuthSockEnvVar().Value, unixSocketPath)
+}
+
+func (r *runtime) AddEnvVars(envVars map[string]string, container *dagger.Container) *dagger.Container {
+	for k, v := range envVars {
+		container = container.WithEnvVariable(k, v)
+	}
+
+	return container
 }
