@@ -53,13 +53,9 @@ func (i *InitOptions) GetArgUpgrade() []string {
 	return []string{}
 }
 
-type InitCMD struct {
-	tfCfg TfConfig
-}
-
-func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dagger.Container, error) {
+func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var args []string
@@ -68,28 +64,29 @@ func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dag
 	}
 
 	if err := tfOpts.ModulePathHasTerraformCode(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	cmdCfg := NewTfCmd()
+	cmdCfg := NewTerraformCommand()
 
 	tfCommandStr := terradagger.BuildCommand(cmdCfg.GetEntryPoint(),
 		cmdCfg.GetInitCommand(), args)
 
-	tfCommandShell := terradagger.RunWithSh(tfCommandStr)
+	tfCommandShell := terradagger.BuildCMDWithSH(tfCommandStr)
 
 	td.Log.Info(fmt.Sprintf("running terraform init with the following command: %s", tfCommandStr))
 
-	imageCfg := container.ImageConfig{} // Empty means it'll fetch the default values.
+	imageCfg := container.NewImageConfig("", tfOpts.GetTerraformVersion())
 
 	td.Log.Info(fmt.Sprintf("using the image %s for the terraform container", imageCfg.GetImageTerraform()))
 	td.Log.Info(fmt.Sprintf("using the version %s for the terraform container", imageCfg.GetVersion()))
 
 	containerCfg := container.Config{
-		MountPathAbs:   td.Config.GetWorkspaceAbs(),
-		Workdir:        tfOpts.GetModulePath(),
-		ContainerImage: &imageCfg,
-		KeepEntryPoint: false, // This will override the container's entrypoint with the command we want to run.
+		MountPathAbs:         td.Config.GetWorkspaceAbs(),
+		Workdir:              tfOpts.GetModulePath(),
+		ContainerImage:       imageCfg,
+		KeepEntryPoint:       false,                           // This will override the container's entrypoint with the command we want to run.
+		AddPrivateGitSupport: tfOpts.GetEnableSSHPrivateGit(), // Add support for private git repos.
 	}
 
 	runtime := container.New(&containerCfg, td)
@@ -97,12 +94,20 @@ func Init(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (*dag
 	tfCmds := []container.Command{tfCommandShell}
 	tfContainer = runtime.AddCommands(tfCmds, tfContainer)
 
-	out, err := runtime.RunAndGetStdout(tfContainer)
+	return tfContainer, runtime, nil
+}
+
+func InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options initOptions) (string, error) {
+	tfInitContainer, runtime, err := Init(td, tfOpts, options)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+
+	out, execErr := runtime.RunAndGetStdout(tfInitContainer)
+	if execErr != nil {
+		return "", err
 	}
 
 	td.Log.Info(out)
-
-	return nil, nil
+	return out, nil
 }

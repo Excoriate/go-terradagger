@@ -47,6 +47,8 @@ type TfGlobalOptions interface {
 	GetTerraformVersion() string
 	IsModulePathValid() error
 	ModulePathHasTerraformCode() error
+
+	GetEnableSSHPrivateGit() bool
 }
 
 func WithOptions(td *terradagger.TD, o *TfOptions) TfGlobalOptions {
@@ -84,5 +86,12 @@ func (o *tfOptions) IsModulePathValid() error {
 }
 
 func (o *tfOptions) ModulePathHasTerraformCode() error {
-	return nil
+	srcAbsolute := o.td.Config.GetWorkspace()
+	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
+
+	return utils.DirHasContentWithCertainExtension(modulePathFull, []string{".tf"})
+}
+
+func (o *tfOptions) GetEnableSSHPrivateGit() bool {
+	return o.enableSSHPrivateGit
 }

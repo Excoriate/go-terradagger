@@ -44,20 +44,3 @@ func GetAllEnvVarsWithPrefix(prefix string) (map[string]string, error) {
 
 	return result, nil
 }
-
-func GetEnvVarByKey(key string, keySensitive bool) (string, error) {
-	if key == "" {
-		return "", fmt.Errorf("key is empty")
-	}
-
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		return "", fmt.Errorf("environment variable %s does not exist", key)
-	}
-
-	if !keySensitive {
-		value = strings.ToLower(value)
-	}
-
-	return utils.RemoveDoubleQuotes(value), nil
-}

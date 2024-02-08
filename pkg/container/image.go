@@ -1,6 +1,10 @@
 package container
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Excoriate/go-terradagger/pkg/config"
+)
 
 type Image interface {
 	GetImageTerraform() string
@@ -16,6 +20,13 @@ type Image interface {
 type ImageConfig struct {
 	image   string
 	version string
+}
+
+func NewImageConfig(image, version string) Image {
+	return &ImageConfig{
+		image:   image,
+		version: version,
+	}
 }
 
 func (o *ImageConfig) GetImageTerraform() string {
@@ -35,15 +46,15 @@ func (o *ImageConfig) GetImageTerragrunt() string {
 }
 
 func (o *ImageConfig) GetImageDefaultTerraform() string {
-	return defaultTerraformImage
+	return config.TerraformDefaultImage
 }
 
 func (o *ImageConfig) GetImageDefaultTerragrunt() string {
-	return defaultTerragruntImage
+	return config.TerragruntDefaultImage
 }
 
 func (o *ImageConfig) GetVersionDefault() string {
-	return defaultVersion
+	return config.DefaultImageVersion
 }
 
 func (o *ImageConfig) GetVersion() string {

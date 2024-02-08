@@ -13,7 +13,7 @@ type Config struct {
 	MountPathAbs         string
 	EnvVars              map[string]string
 	AddPrivateGitSupport bool
-	ContainerImage       *ImageConfig
+	ContainerImage       Image
 	MountPathPrefix      string
 	KeepEntryPoint       bool
 }
@@ -23,7 +23,7 @@ type Container interface {
 	GetMountDir(client *dagger.Client) *dagger.Directory
 	GetDir(dirPathAbs string, client *dagger.Client) *dagger.Directory
 	GetMountPathPrefix() string
-	GetImageConfig() *ImageConfig
+	GetImageConfig() Image
 
 	GetWorkdir() string
 
@@ -57,7 +57,7 @@ func (o *Config) GetMountPathPrefix() string {
 	return o.MountPathPrefix
 }
 
-func (o *Config) GetImageConfig() *ImageConfig {
+func (o *Config) GetImageConfig() Image {
 	return o.ContainerImage
 }
 

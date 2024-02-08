@@ -1,21 +1,49 @@
 package terraform
 
-import "github.com/Excoriate/go-terradagger/pkg/terradagger"
+var (
+	tfEntryPoint      = "terraform"
+	tfInitCommand     = "init"
+	tfPlanCommand     = "plan"
+	tfApplyCommand    = "apply"
+	tfDestroyCommand  = "destroy"
+	tfValidateCommand = "validate"
+)
 
-type TFCommands interface {
-	Init(args TFCommandArgs) error
-	//Validate(args TFCommandArgs) error
-	//Plan(args TFCommandArgs) error
-	//Apply(args TFCommandArgs) error
-	//Destroy(args TFCommandArgs) error
+type TfCmd struct{}
+
+type Command interface {
+	GetEntryPoint() string
+	GetInitCommand() string
+	GetPlanCommand() string
+	GetApplyCommand() string
+	GetDestroyCommand() string
+	GetValidateCommand() string
 }
 
-type TFCommandArgs interface {
-	//GetArgs() []string
+func NewTerraformCommand() Command {
+	return &TfCmd{}
 }
 
-type TFCommand struct {
-	tfCfg     TfConfig
-	tfOptions TfGlobalOptions
-	td        *terradagger.TD
+func (t *TfCmd) GetEntryPoint() string {
+	return tfEntryPoint
+}
+
+func (t *TfCmd) GetInitCommand() string {
+	return tfInitCommand
+}
+
+func (t *TfCmd) GetPlanCommand() string {
+	return tfPlanCommand
+}
+
+func (t *TfCmd) GetApplyCommand() string {
+	return tfApplyCommand
+}
+
+func (t *TfCmd) GetDestroyCommand() string {
+	return tfDestroyCommand
+}
+
+func (t *TfCmd) GetValidateCommand() string {
+	return tfValidateCommand
 }

@@ -22,10 +22,10 @@ func BuildCommand(binary string, command string, args []string) string {
 	return sb.String()
 }
 
-func RunWithBash(command string) []string {
+func BuildCMDWithBash(command string) []string {
 	return []string{BashEntrypoint, "-c", command}
 }
 
-func RunWithSh(command string) []string {
+func BuildCMDWithSH(command string) []string {
 	return []string{ShEntrypoint, "-c", command}
 }

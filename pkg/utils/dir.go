@@ -6,27 +6,6 @@ import (
 	"path/filepath"
 )
 
-func DirExist(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return info.IsDir()
-}
-
-func DirExistE(path string) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-
-	if !info.IsDir() {
-		return fmt.Errorf("path is not a directory: %s", path)
-	}
-
-	return nil
-}
-
 func IsValidDirE(path string) error {
 	// Clean the path to remove any unnecessary parts.
 	cleanPath := filepath.Clean(path)
@@ -69,4 +48,38 @@ func DirExistAndHasContent(dirPath string) error {
 	}
 
 	return nil
+}
+
+func DirHasContentWithCertainExtension(dirPath string, extensions []string) error {
+	if dirPath == "" {
+		return fmt.Errorf("directory path cannot be empty")
+	}
+
+	if len(extensions) == 0 {
+		return fmt.Errorf("extensions cannot be empty")
+	}
+
+	err := DirExistAndHasContent(dirPath)
+	if err != nil {
+		return err
+	}
+
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return fmt.Errorf("failed to read the directory %s: %v", dirPath, err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		for _, ext := range extensions {
+			if filepath.Ext(file.Name()) == ext {
+				return nil
+			}
+		}
+	}
+
+	return fmt.Errorf("directory %s does not contain any files with the following extensions: %v", dirPath, extensions)
 }

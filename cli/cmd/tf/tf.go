@@ -53,7 +53,7 @@ var Cmd = &cobra.Command{
 
 		defer td.Engine.GetEngine().Close()
 
-		_, initErr := terraform.Init(td, terraformOptions, nil)
+		_, initErr := terraform.InitE(td, terraformOptions, nil)
 		if initErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
 				Message: "Unable to run terraform init",
