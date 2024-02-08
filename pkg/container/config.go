@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/Excoriate/go-terradagger/pkg/utils"
 
 	"dagger.io/dagger"
 )
@@ -16,7 +19,34 @@ type Config struct {
 	ContainerImage       Image
 	MountPathPrefix      string
 	KeepEntryPoint       bool
+	InvalidateCache      bool
 }
+
+type EnvVar struct {
+	Name   string
+	Value  string
+	Expand bool
+}
+
+var (
+	cacheBusterEnvVar = EnvVar{
+		Name:   "CACHE_BUSTER",
+		Value:  fmt.Sprintf("%d", time.Now().Unix()),
+		Expand: false,
+	}
+
+	gitSSHEnvVar = EnvVar{
+		Name:   "GIT_SSH_COMMAND",
+		Value:  utils.GetSSHGitSecureConnectCommand(),
+		Expand: false,
+	}
+
+	sshAuthSockEnvVar = EnvVar{
+		Name:   "SSH_AUTH_SOCK",
+		Value:  utils.GetSSHAuthSock(),
+		Expand: false,
+	}
+)
 
 type Container interface {
 	GetMountDirPath() string
@@ -29,6 +59,11 @@ type Container interface {
 
 	IsKeepEntryPoint() bool
 	GetEnvVars() map[string]string
+	IsCacheInvalidated() bool
+	IsPrivateGitSupportEnabled() bool
+	GetCacheBusterEnvVar() EnvVar
+	GetGitSSHEnvVar() EnvVar
+	GetSSHAuthSockEnvVar() EnvVar
 }
 
 func (o *Config) GetMountDir(client *dagger.Client) *dagger.Directory {
@@ -71,4 +106,24 @@ func (o *Config) IsKeepEntryPoint() bool {
 
 func (o *Config) GetEnvVars() map[string]string {
 	return o.EnvVars
+}
+
+func (o *Config) IsCacheInvalidated() bool {
+	return o.InvalidateCache
+}
+
+func (o *Config) IsPrivateGitSupportEnabled() bool {
+	return o.AddPrivateGitSupport
+}
+
+func (o *Config) GetCacheBusterEnvVar() EnvVar {
+	return cacheBusterEnvVar
+}
+
+func (o *Config) GetGitSSHEnvVar() EnvVar {
+	return gitSSHEnvVar
+}
+
+func (o *Config) GetSSHAuthSockEnvVar() EnvVar {
+	return sshAuthSockEnvVar
 }

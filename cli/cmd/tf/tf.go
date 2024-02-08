@@ -72,7 +72,8 @@ var Cmd = &cobra.Command{
 		// -------------------------------
 		terragruntOptions :=
 			terraformcore.WithOptions(td, &terraformcore.TfOptions{
-				ModulePath: "test/terraform/terragrunt-1",
+				ModulePath:          "test/terraform/terragrunt-2",
+				EnableSSHPrivateGit: true,
 			})
 
 		_, initTgErr := terragrunt.InitE(td, terragruntOptions, terragrunt.InitOptions{}, terragrunt.GlobalOptions{})

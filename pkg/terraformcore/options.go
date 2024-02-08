@@ -23,9 +23,12 @@ type tfOptions struct {
 	envVarsAutoInjectFromHost bool
 	// envVarsAutoInjectTFVars is a flag to scan the environment variables and inject them into the terraform code
 	envVarsAutoInjectTFVars bool
-	// TerraformCustomContainerImage is the custom image to use for the terraform container
+	// customContainerImage is the custom image to use for the terraform container
+	customContainerImage string
 	// enableSSHPrivateGit is a flag to use SSH for the modules
 	enableSSHPrivateGit bool
+	// invalidateCache is a flag to invalidate the cache
+	invalidateCache bool
 }
 
 type TfOptions struct {
@@ -38,10 +41,12 @@ type TfOptions struct {
 	EnvVarsAutoInjectFromHost bool
 	// EnvVarsAutoInjectTFVars is a flag to scan the environment variables and inject them into the terraform code
 	EnvVarsAutoInjectTFVars bool
-	// TerraformCustomContainerImage is the custom image to use for the terraform container
-	TerraformCustomContainerImage string
+	// CustomContainerImage is the custom image to use for the terraform container
+	CustomContainerImage string
 	// EnableSSHPrivateGit is a flag to use SSH for the modules
 	EnableSSHPrivateGit bool
+	// InvalidateCache is a flag to invalidate the cache
+	InvalidateCache bool
 }
 
 type TfGlobalOptions interface {
@@ -51,6 +56,9 @@ type TfGlobalOptions interface {
 	ModulePathHasTerraformCode() error
 	ModulePathHasTerragruntHCL() error
 	GetEnableSSHPrivateGit() bool
+
+	GetCustomContainerImage() string
+	GetInvalidateCache() bool
 }
 
 func WithOptions(td *terradagger.TD, o *TfOptions) TfGlobalOptions {
@@ -61,6 +69,8 @@ func WithOptions(td *terradagger.TD, o *TfOptions) TfGlobalOptions {
 		envVarsAutoInjectTFVars:   o.EnvVarsAutoInjectTFVars,
 		enableSSHPrivateGit:       o.EnableSSHPrivateGit,
 		modulePath:                o.ModulePath,
+		customContainerImage:      o.CustomContainerImage,
+		invalidateCache:           o.InvalidateCache,
 	}
 }
 
@@ -107,4 +117,12 @@ func (o *tfOptions) ModulePathHasTerragruntHCL() error {
 
 func (o *tfOptions) GetEnableSSHPrivateGit() bool {
 	return o.enableSSHPrivateGit
+}
+
+func (o *tfOptions) GetCustomContainerImage() string {
+	return o.customContainerImage
+}
+
+func (o *tfOptions) GetInvalidateCache() bool {
+	return o.invalidateCache
 }

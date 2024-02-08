@@ -98,7 +98,14 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 
 	td.Log.Info(fmt.Sprintf("running terraform init with the following command: %s", cmdStr))
 
-	imageCfg := container.NewImageConfig(i.Config.GetContainerImage(), tfOpts.GetTerraformVersion())
+	// Support for custom container image
+	var imageCfg container.Image
+	if tfOpts.GetCustomContainerImage() != "" {
+		td.Log.Warn(fmt.Sprintf("using custom container image: %s", tfOpts.GetCustomContainerImage()))
+		imageCfg = container.NewImageConfig(tfOpts.GetCustomContainerImage(), tfOpts.GetTerraformVersion())
+	} else {
+		imageCfg = container.NewImageConfig(i.Config.GetContainerImage(), tfOpts.GetTerraformVersion())
+	}
 
 	td.Log.Info(fmt.Sprintf("container image: %s", i.Config.GetContainerImage()))
 	td.Log.Info(fmt.Sprintf("using the image %s for the terraform container", imageCfg.GetImageTerraform()))
