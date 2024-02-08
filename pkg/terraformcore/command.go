@@ -1,7 +1,10 @@
 package terraformcore
 
+import "github.com/Excoriate/go-terradagger/pkg/config"
+
 var (
 	tfEntryPoint      = "terraform"
+	tgEntryPoint      = "terragrunt"
 	tfInitCommand     = "init"
 	tfPlanCommand     = "plan"
 	tfApplyCommand    = "apply"
@@ -12,7 +15,7 @@ var (
 type TfCmd struct{}
 
 type CommandConfig interface {
-	GetEntryPoint() string
+	GetEntryPoint(iaacTool string) string
 	GetInitCommand() string
 	GetPlanCommand() string
 	GetApplyCommand() string
@@ -24,7 +27,15 @@ func NewTerraformCommandConfig() CommandConfig {
 	return &TfCmd{}
 }
 
-func (t *TfCmd) GetEntryPoint() string {
+func (t *TfCmd) GetEntryPoint(iaacTool string) string {
+	if iaacTool == "" {
+		return tfEntryPoint
+	}
+
+	if iaacTool == config.IacToolTerragrunt {
+		return tgEntryPoint
+	}
+
 	return tfEntryPoint
 }
 

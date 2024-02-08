@@ -3,7 +3,7 @@ package tf
 import (
 	"context"
 
-	"github.com/Excoriate/go-terradagger/pkg/terraform"
+	"github.com/Excoriate/go-terradagger/pkg/terragrunt"
 
 	"github.com/Excoriate/go-terradagger/cli/internal/tui"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
@@ -41,10 +41,6 @@ var Cmd = &cobra.Command{
 			Workspace: "../",
 		})
 
-		terraformOptions := terraformcore.WithOptions(td, &terraformcore.TfOptions{
-			ModulePath: "test-data/terraform/root-module-1",
-		})
-
 		// Start the engine (and the Dagger backend)
 		if err := td.StartEngine(); err != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
@@ -55,15 +51,37 @@ var Cmd = &cobra.Command{
 
 		defer td.Engine.GetEngine().Close()
 
-		_, initErr := terraform.InitE(td, terraformOptions, terraform.InitOptions{})
-		// Run terraform init
-		if initErr != nil {
+		// -------------------------------
+		// terraform
+		// -------------------------------
+		//terraformOptions := terraformcore.WithOptions(td, &terraformcore.TfOptions{
+		//  ModulePath: "test/terraform/root-module-1",
+		//})
+
+		//_, initErr := terraform.InitE(td, terraformOptions, terraform.InitOptions{})
+		//// Run terraform init
+		//if initErr != nil {
+		//	ux.Msg.ShowError(tui.MessageOptions{
+		//		Message: "Error initializing terraform",
+		//		Error:   initErr,
+		//	})
+		//}
+
+		// -------------------------------
+		// Terragrunt
+		// -------------------------------
+		terragruntOptions :=
+			terraformcore.WithOptions(td, &terraformcore.TfOptions{
+				ModulePath: "test/terraform/terragrunt-1",
+			})
+
+		_, initTgErr := terragrunt.InitE(td, terragruntOptions, terragrunt.InitOptions{}, terragrunt.GlobalOptions{})
+		if initTgErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Error initializing terraform",
-				Error:   initErr,
+				Message: "Error initializing terragrunt",
+				Error:   initTgErr,
 			})
 		}
-
 	},
 }
 

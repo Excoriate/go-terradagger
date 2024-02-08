@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/Excoriate/go-terradagger/pkg/config"
+
 	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 
@@ -47,6 +49,7 @@ type TfGlobalOptions interface {
 	GetTerraformVersion() string
 	IsModulePathValid() error
 	ModulePathHasTerraformCode() error
+	ModulePathHasTerragruntHCL() error
 	GetEnableSSHPrivateGit() bool
 }
 
@@ -66,6 +69,10 @@ func (o *tfOptions) GetModulePath() string {
 }
 
 func (o *tfOptions) GetTerraformVersion() string {
+	if o.terraformVersion == "" {
+		return config.TerraformDefaultVersion
+	}
+
 	return o.terraformVersion
 }
 
@@ -89,6 +96,13 @@ func (o *tfOptions) ModulePathHasTerraformCode() error {
 	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
 
 	return utils.DirHasContentWithCertainExtension(modulePathFull, []string{".tf"})
+}
+
+func (o *tfOptions) ModulePathHasTerragruntHCL() error {
+	srcAbsolute := o.td.Config.GetWorkspace()
+	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
+
+	return utils.DirHasContentWithCertainExtension(modulePathFull, []string{".hcl"})
 }
 
 func (o *tfOptions) GetEnableSSHPrivateGit() bool {

@@ -3,6 +3,8 @@ package terraformcore
 import (
 	"fmt"
 
+	"github.com/Excoriate/go-terradagger/pkg/config"
+
 	"github.com/Excoriate/go-terradagger/pkg/container"
 
 	"dagger.io/dagger"
@@ -53,7 +55,7 @@ func (ti *InitOptions) GetArgUpgrade() []string {
 	return []string{}
 }
 
-func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
 		return nil, nil, err
 	}
@@ -63,21 +65,42 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 		args = utils.MergeSlices(options.GetArgUpgrade(), options.GetArgNoColor(), options.GetArgBackendConfigFile())
 	}
 
-	if err := tfOpts.ModulePathHasTerraformCode(); err != nil {
-		return nil, nil, err
+	if i.Config.GetBinary() == config.IacToolTerraform {
+		if err := tfOpts.ModulePathHasTerraformCode(); err != nil {
+			return nil, nil, err
+		}
+	}
+
+	if i.Config.GetBinary() == config.IacToolTerragrunt {
+		if err := tfOpts.ModulePathHasTerragruntHCL(); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	cmdCfg := NewTerraformCommandConfig()
 
-	tfCommandStr := terradagger.BuildCommand(cmdCfg.GetEntryPoint(),
-		cmdCfg.GetInitCommand(), args)
+	var cmdStr string
+	if i.Config.GetBinary() == config.IacToolTerragrunt {
+		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
+			Binary:      i.Config.GetBinary(),
+			Command:     cmdCfg.GetInitCommand(),
+			CommandArgs: args,
+		})
+	} else {
+		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
+			Binary:      i.Config.GetBinary(),
+			Command:     cmdCfg.GetInitCommand(),
+			CommandArgs: args,
+		})
+	}
 
-	tfCommandShell := terradagger.BuildCMDWithSH(tfCommandStr)
+	tfCommandShell := terradagger.BuildCMDWithSH(cmdStr)
 
-	td.Log.Info(fmt.Sprintf("running terraform init with the following command: %s", tfCommandStr))
+	td.Log.Info(fmt.Sprintf("running terraform init with the following command: %s", cmdStr))
 
-	imageCfg := container.NewImageConfig("", tfOpts.GetTerraformVersion())
+	imageCfg := container.NewImageConfig(i.Config.GetContainerImage(), tfOpts.GetTerraformVersion())
 
+	td.Log.Info(fmt.Sprintf("container image: %s", i.Config.GetContainerImage()))
 	td.Log.Info(fmt.Sprintf("using the image %s for the terraform container", imageCfg.GetImageTerraform()))
 	td.Log.Info(fmt.Sprintf("using the version %s for the terraform container", imageCfg.GetVersion()))
 
@@ -97,8 +120,8 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 	return tfContainer, runtime, nil
 }
 
-func (i *IasC) InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs) (string, error) {
-	tfInitContainer, runtime, err := i.Init(td, tfOpts, options)
+func (i *IasC) InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (string, error) {
+	tfInitContainer, runtime, err := i.Init(td, tfOpts, options, extraArgs)
 	if err != nil {
 		return "", err
 	}

@@ -8,8 +8,8 @@ import (
 )
 
 type IacCoreCommand interface {
-	Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs) (*dagger.Container, container.Runtime, error)
-	InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs) (string, error)
+	Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (*dagger.Container, container.Runtime, error)
+	InitE(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (string, error)
 }
 
 type IacConfigOptions struct {

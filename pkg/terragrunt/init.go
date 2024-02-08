@@ -1,7 +1,8 @@
-package terraform
+package terragrunt
 
 import (
 	"dagger.io/dagger"
+	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/terraformcore"
@@ -16,9 +17,9 @@ type InitOptions struct {
 	Upgrade bool
 }
 
-func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions) (*dagger.Container, container.Runtime, error) {
+func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, terragruntGlobalOptions GlobalOptions) (*dagger.Container, container.Runtime, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terraform",
+		Binary: config.IacToolTerragrunt,
 	}
 
 	tfIaac := terraformcore.IasC{
@@ -32,9 +33,9 @@ func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Init
 	}, []string{})
 }
 
-func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions) (string, error) {
+func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, terragruntGlobalOptions GlobalOptions) (string, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terraform",
+		Binary: config.IacToolTerragrunt,
 	}
 
 	tfIaac := terraformcore.IasC{
