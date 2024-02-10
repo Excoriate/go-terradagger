@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"dagger.io/dagger"
+	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/terraformcore"
@@ -19,14 +20,14 @@ type PlanOptions struct {
 
 func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions) (*dagger.Container, container.Runtime, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terraform",
+		Binary: config.IacToolTerraform,
 	}
 
 	tfIaac := terraformcore.IasC{
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.Plan(td, tfOpts, &terraformcore.PlanOptions{
+	return tfIaac.Plan(td, tfOpts, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
@@ -35,14 +36,14 @@ func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Plan
 
 func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions) (string, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terraform",
+		Binary: config.IacToolTerraform,
 	}
 
 	tfIaac := terraformcore.IasC{
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.PlanE(td, tfOpts, &terraformcore.PlanOptions{
+	return tfIaac.PlanE(td, tfOpts, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,

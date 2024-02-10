@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"dagger.io/dagger"
+	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/terraformcore"
@@ -18,14 +19,14 @@ type InitOptions struct {
 
 func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions) (*dagger.Container, container.Runtime, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terraform",
+		Binary: config.IacToolTerraform,
 	}
 
 	tfIaac := terraformcore.IasC{
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.Init(td, tfOpts, &terraformcore.InitOptions{
+	return tfIaac.Init(td, tfOpts, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
@@ -34,14 +35,14 @@ func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Init
 
 func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions) (string, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terraform",
+		Binary: config.IacToolTerraform,
 	}
 
 	tfIaac := terraformcore.IasC{
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.InitE(td, tfOpts, &terraformcore.InitOptions{
+	return tfIaac.InitE(td, tfOpts, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,

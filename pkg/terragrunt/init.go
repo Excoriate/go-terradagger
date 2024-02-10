@@ -26,7 +26,7 @@ func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Init
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.Init(td, tfOpts, &terraformcore.InitOptions{
+	return tfIaac.Init(td, tfOpts, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
@@ -42,7 +42,7 @@ func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Ini
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.InitE(td, tfOpts, &terraformcore.InitOptions{
+	return tfIaac.InitE(td, tfOpts, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,

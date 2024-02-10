@@ -27,7 +27,7 @@ func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Plan
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.Plan(td, tfOpts, &terraformcore.PlanOptions{
+	return tfIaac.Plan(td, tfOpts, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
@@ -43,7 +43,7 @@ func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Pla
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.PlanE(td, tfOpts, &terraformcore.PlanOptions{
+	return tfIaac.PlanE(td, tfOpts, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,

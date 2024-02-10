@@ -7,27 +7,27 @@ var (
 	tfDefaultLockFileName        = ".terraform.lock.hcl"
 )
 
-type TfConfig interface {
+type TerraformConfig interface {
 	GetCacheDir() string
 	GetStateFileName() string
 	GetStateBackupFileName() string
 	GetLockFileName() string
 }
 
-type tfCfg struct{}
+type tfConfig struct{}
 
-func (t *tfCfg) GetCacheDir() string {
+func (t *tfConfig) GetCacheDir() string {
 	return tfDefaultCacheDir
 }
 
-func (t *tfCfg) GetStateFileName() string {
+func (t *tfConfig) GetStateFileName() string {
 	return tfDefaultStateFileName
 }
 
-func (t *tfCfg) GetStateBackupFileName() string {
+func (t *tfConfig) GetStateBackupFileName() string {
 	return tfDefaultStateBackupFileName
 }
 
-func (t *tfCfg) GetLockFileName() string {
+func (t *tfConfig) GetLockFileName() string {
 	return tfDefaultLockFileName
 }

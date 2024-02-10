@@ -2,6 +2,7 @@ package terragrunt
 
 import (
 	"dagger.io/dagger"
+	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 	"github.com/Excoriate/go-terradagger/pkg/terraformcore"
@@ -21,14 +22,14 @@ type DestroyOptions struct {
 
 func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions) (*dagger.Container, container.Runtime, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terragrunt",
+		Binary: config.IacToolTerragrunt,
 	}
 
 	tfIaac := terraformcore.IasC{
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.Destroy(td, tfOpts, &terraformcore.DestroyOptions{
+	return tfIaac.Destroy(td, tfOpts, &terraformcore.DestroyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
@@ -38,14 +39,14 @@ func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options D
 
 func DestroyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions) (string, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: "terragrunt",
+		Binary: config.IacToolTerragrunt,
 	}
 
 	tfIaac := terraformcore.IasC{
 		Config: &IaacCfg,
 	}
 
-	return tfIaac.DestroyE(td, tfOpts, &terraformcore.DestroyOptions{
+	return tfIaac.DestroyE(td, tfOpts, &terraformcore.DestroyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
