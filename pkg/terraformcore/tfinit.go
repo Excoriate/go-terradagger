@@ -13,7 +13,7 @@ import (
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
-func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, extraArgs []string) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs, _ []string) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
 		return nil, nil, err
 	}
@@ -35,19 +35,19 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 		}
 	}
 
-	cmdCfg := NewTerraformCommandConfig()
+	lfCMD := TfLifecycleCMD{}
 
 	var cmdStr string
 	if i.Config.GetBinary() == config.IacToolTerragrunt {
 		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetInitCommand(),
+			Command:     lfCMD.GetInitCommand(),
 			CommandArgs: args,
 		})
 	} else {
 		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetInitCommand(),
+			Command:     lfCMD.GetInitCommand(),
 			CommandArgs: args,
 		})
 	}

@@ -33,32 +33,32 @@ func (i *IasC) Destroy(td *terradagger.TD, tfOpts TfGlobalOptions, options Destr
 		}
 	}
 
-	cmdCfg := NewTerraformCommandConfig()
+	lfCMD := TfLifecycleCMD{}
 
 	var cmdStr string
 	var autoInjectedInitCommand string
 	if i.Config.GetBinary() == config.IacToolTerragrunt {
 		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetDestroyCommand(),
+			Command:     lfCMD.GetDestroyCommand(),
 			CommandArgs: args,
 		})
 
 		autoInjectedInitCommand = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetInitCommand(),
+			Command:     lfCMD.GetInitCommand(),
 			CommandArgs: []string{},
 		})
 	} else {
 		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetDestroyCommand(),
+			Command:     lfCMD.GetDestroyCommand(),
 			CommandArgs: args,
 		})
 
 		autoInjectedInitCommand = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
 			Binary:      i.Config.GetBinary(),
-			Command:     cmdCfg.GetInitCommand(),
+			Command:     lfCMD.GetInitCommand(),
 			CommandArgs: []string{},
 		})
 	}
