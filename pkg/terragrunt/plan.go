@@ -18,7 +18,7 @@ type PlanOptions struct {
 	Vars []terraformcore.TFInputVariable
 }
 
-func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, terragruntGlobalOptions GlobalOptions) (*dagger.Container, container.Runtime, error) {
+func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, _ GlobalOptions) (*dagger.Container, container.Runtime, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
 		Binary: config.IacToolTerragrunt,
 	}
@@ -34,7 +34,7 @@ func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Plan
 	}, []string{})
 }
 
-func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, terragruntGlobalOptions GlobalOptions) (string, error) {
+func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, _ GlobalOptions) (string, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
 		Binary: config.IacToolTerragrunt,
 	}

@@ -17,7 +17,7 @@ type InitOptions struct {
 	Upgrade bool
 }
 
-func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, terragruntGlobalOptions GlobalOptions) (*dagger.Container, container.Runtime, error) {
+func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, _ GlobalOptions) (*dagger.Container, container.Runtime, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
 		Binary: config.IacToolTerragrunt,
 	}
@@ -33,7 +33,7 @@ func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Init
 	}, []string{})
 }
 
-func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, terragruntGlobalOptions GlobalOptions) (string, error) {
+func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, _ GlobalOptions) (string, error) {
 	IaacCfg := terraformcore.IacConfigOptions{
 		Binary: config.IacToolTerragrunt,
 	}

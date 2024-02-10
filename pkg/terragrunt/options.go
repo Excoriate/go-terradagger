@@ -53,7 +53,7 @@ type GlobalOptions struct {
 	IncludeModulePrefix bool `json:"terragrunt-include-module-prefix,omitempty"`
 
 	// If specified, Terragrunt will output its logs in JSON format.
-	JsonLog bool `json:"terragrunt-json-log,omitempty"`
+	JSONLog bool `json:"terragrunt-json-log,omitempty"`
 
 	// Sets the logging level for Terragrunt. Supported levels: panic, fatal, error, warn, info, debug, trace.
 	LogLevel string `json:"terragrunt-log-level,omitempty"`
@@ -92,10 +92,10 @@ type GlobalOptions struct {
 	StrictInclude bool `json:"terragrunt-strict-include,omitempty"`
 
 	// If specified, Terragrunt will wrap Terraform stdout and stderr in JSON.
-	TfLogsToJson bool `json:"terragrunt-tf-logs-to-json,omitempty"`
+	TfLogsToJSON bool `json:"terragrunt-tf-logs-to-json,omitempty"`
 
 	// Path to the Terraform binary. Default is terraform (on PATH).
-	Tfpath string `json:"terragrunt-tfpath,omitempty"`
+	TfPath string `json:"terragrunt-tfpath,omitempty"`
 
 	// Enables caching of includes during partial parsing operations. Will also be used for the --terragrunt-iam-role option if provided.
 	UsePartialParseConfigCache bool `json:"terragrunt-use-partial-parse-config-cache,omitempty"`
