@@ -50,7 +50,7 @@ func (po *PlanOptions) GetArgVars() []string {
 	return args
 }
 
-func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs, extraArgs []string) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs, _ []string) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
 		return nil, nil, err
 	}
@@ -75,11 +75,18 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 	cmdCfg := NewTerraformCommandConfig()
 
 	var cmdStr string
+	var autoInjectedInitCommand string
 	if i.Config.GetBinary() == config.IacToolTerragrunt {
 		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      i.Config.GetBinary(),
 			Command:     cmdCfg.GetPlanCommand(),
 			CommandArgs: args,
+		})
+
+		autoInjectedInitCommand = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
+			Binary:      i.Config.GetBinary(),
+			Command:     cmdCfg.GetInitCommand(),
+			CommandArgs: []string{},
 		})
 	} else {
 		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
@@ -87,9 +94,16 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 			Command:     cmdCfg.GetPlanCommand(),
 			CommandArgs: args,
 		})
+
+		autoInjectedInitCommand = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
+			Binary:      i.Config.GetBinary(),
+			Command:     cmdCfg.GetInitCommand(),
+			CommandArgs: []string{},
+		})
 	}
 
 	tfCommandShell := terradagger.BuildCMDWithSH(cmdStr)
+	tfInitInjectedCommandShell := terradagger.BuildCMDWithSH(autoInjectedInitCommand)
 
 	td.Log.Info(fmt.Sprintf("running %s plan with the following command: %s", i.Config.GetBinary(), cmdStr))
 
@@ -135,6 +149,9 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 	}
 
 	tfCmds := []container.Command{tfCommandShell}
+	tfInitInjected := []container.Command{tfInitInjectedCommandShell}
+
+	tfContainer = runtime.AddCommands(tfInitInjected, tfContainer)
 	tfContainer = runtime.AddCommands(tfCmds, tfContainer)
 
 	return tfContainer, runtime, nil

@@ -85,11 +85,18 @@ func (i *IasC) Destroy(td *terradagger.TD, tfOpts TfGlobalOptions, options Destr
 	cmdCfg := NewTerraformCommandConfig()
 
 	var cmdStr string
+	var autoInjectedInitCommand string
 	if i.Config.GetBinary() == config.IacToolTerragrunt {
 		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      i.Config.GetBinary(),
 			Command:     cmdCfg.GetDestroyCommand(),
 			CommandArgs: args,
+		})
+
+		autoInjectedInitCommand = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
+			Binary:      i.Config.GetBinary(),
+			Command:     cmdCfg.GetInitCommand(),
+			CommandArgs: []string{},
 		})
 	} else {
 		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
@@ -97,9 +104,16 @@ func (i *IasC) Destroy(td *terradagger.TD, tfOpts TfGlobalOptions, options Destr
 			Command:     cmdCfg.GetDestroyCommand(),
 			CommandArgs: args,
 		})
+
+		autoInjectedInitCommand = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
+			Binary:      i.Config.GetBinary(),
+			Command:     cmdCfg.GetInitCommand(),
+			CommandArgs: []string{},
+		})
 	}
 
 	tfCommandShell := terradagger.BuildCMDWithSH(cmdStr)
+	tfInitInjectedCommandShell := terradagger.BuildCMDWithSH(autoInjectedInitCommand)
 
 	td.Log.Info(fmt.Sprintf("running %s with the following command: %s", i.Config.GetBinary(), cmdStr))
 
@@ -145,6 +159,9 @@ func (i *IasC) Destroy(td *terradagger.TD, tfOpts TfGlobalOptions, options Destr
 	}
 
 	tfCmds := []container.Command{tfCommandShell}
+	tfInitInjected := []container.Command{tfInitInjectedCommandShell}
+
+	tfContainer = runtime.AddCommands(tfInitInjected, tfContainer)
 	tfContainer = runtime.AddCommands(tfCmds, tfContainer)
 
 	return tfContainer, runtime, nil

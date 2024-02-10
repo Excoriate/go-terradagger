@@ -3,7 +3,7 @@ package tf
 import (
 	"context"
 
-	"github.com/Excoriate/go-terradagger/pkg/terragrunt"
+	"github.com/Excoriate/go-terradagger/pkg/terraform"
 
 	"github.com/Excoriate/go-terradagger/cli/internal/tui"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
@@ -43,26 +43,7 @@ var Cmd = &cobra.Command{
 
 		defer td.Engine.GetEngine().Close()
 
-		// -------------------------------
-		// terraform
-		// -------------------------------
-		//terraformOptions := terraformcore.WithOptions(td, &terraformcore.TfOptions{
-		//  ModulePath: "test/terraform/root-module-1",
-		//})
-
-		//_, initErr := terraform.InitE(td, terraformOptions, terraform.InitOptions{})
-		//// Run terraform init
-		//if initErr != nil {
-		//	ux.Msg.ShowError(tui.MessageOptions{
-		//		Message: "Error initializing terraform",
-		//		Error:   initErr,
-		//	})
-		//}
-
-		// -------------------------------
-		// Terragrunt
-		// -------------------------------
-		terragruntOptions :=
+		tfOpptions :=
 			terraformcore.WithOptions(td, &terraformcore.TfOptions{
 				ModulePath:                   viper.GetString("module"),
 				EnableSSHPrivateGit:          true,
@@ -70,19 +51,55 @@ var Cmd = &cobra.Command{
 				EnvVarsToInjectByKeyFromHost: []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"},
 			})
 
-		_, initTgErr := terragrunt.InitE(td, terragruntOptions, terragrunt.InitOptions{}, terragrunt.GlobalOptions{})
-		if initTgErr != nil {
+		_, tfInitErr := terraform.InitE(td, tfOpptions, terraform.InitOptions{})
+		if tfInitErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Error initializing terragrunt",
-				Error:   initTgErr,
+				Message: tfInitErr.Error(),
+				Error:   tfInitErr,
 			})
 		}
 
-		_, planTgErr := terragrunt.PlanE(td, terragruntOptions, terragrunt.PlanOptions{}, terragrunt.GlobalOptions{})
-		if planTgErr != nil {
+		_, tfPlanErr := terraform.PlanE(td, tfOpptions, terraform.PlanOptions{
+			Vars: []terraformcore.TFInputVariable{
+				{
+					Name:  "is_enabled",
+					Value: "true",
+				}},
+		})
+		if tfPlanErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: "Error planning terragrunt",
-				Error:   planTgErr,
+				Message: tfInitErr.Error(),
+				Error:   tfPlanErr,
+			})
+		}
+
+		_, tfApplyErr := terraform.ApplyE(td, tfOpptions, terraform.ApplyOptions{
+			AutoApprove: true,
+			Vars: []terraformcore.TFInputVariable{
+				{
+					Name:  "is_enabled",
+					Value: "true",
+				}},
+		})
+		if tfApplyErr != nil {
+			ux.Msg.ShowError(tui.MessageOptions{
+				Message: tfInitErr.Error(),
+				Error:   tfApplyErr,
+			})
+		}
+
+		_, tfDestroyErr := terraform.DestroyE(td, tfOpptions, terraform.DestroyOptions{
+			AutoApprove: true,
+			Vars: []terraformcore.TFInputVariable{
+				{
+					Name:  "is_enabled",
+					Value: "true",
+				}},
+		})
+		if tfDestroyErr != nil {
+			ux.Msg.ShowError(tui.MessageOptions{
+				Message: tfInitErr.Error(),
+				Error:   tfDestroyErr,
 			})
 		}
 	},
