@@ -31,7 +31,7 @@ repos:
       rev: 3.0.0
       hooks:
           - id: git-check
-          - id: git-dirty 
+          - id: git-dirty
           - id: script-must-have-extension
 
 
