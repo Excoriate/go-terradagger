@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.2.1](https://github.com/Excoriate/go-terradagger/compare/v1.2.0...v1.2.1) (2024-02-11)
+
+
+### Bug Fixes
+
+* add auto-inject for terraform commands ([8930c49](https://github.com/Excoriate/go-terradagger/commit/8930c49f98489bea292ceb8bccafe5e97696db28))
+
+
+### Refactoring
+
+* add centralised command string generator ([90894bb](https://github.com/Excoriate/go-terradagger/commit/90894bbf671ba9fa76ad4785ad6ccdc5c1774e17))
+* add high-level runner api ([4d04fd9](https://github.com/Excoriate/go-terradagger/commit/4d04fd99a497f499496a0594cc8d1d8428c0b163))
+* add terraformcore container configurator ([b7cd389](https://github.com/Excoriate/go-terradagger/commit/b7cd38965a66a9ef3150c850e16059b831475782))
+* centralise command resolver for terraform lifecycle commands ([49f9716](https://github.com/Excoriate/go-terradagger/commit/49f9716889ae05fd580cbb3c13b59d80eaf09ac4))
+* centralise the image configuration resolution ([8e72843](https://github.com/Excoriate/go-terradagger/commit/8e728435281f66da60ce6ec7c1318460a0aad896))
+* fix naming ([7cd7373](https://github.com/Excoriate/go-terradagger/commit/7cd737364858b9b2a2a9f427f8c32a0ddf8bac16))
+* move args to separated go files, enhance naming ([460b514](https://github.com/Excoriate/go-terradagger/commit/460b51490aeb38d991abe8c5ba860746429abcc7))
+* move tests. Add rest of pending apis for tg and tf ([720be28](https://github.com/Excoriate/go-terradagger/commit/720be2840cc02105dfbba9e4e9bd1522e661111f))
+* remove duplicated apis, leverage runner for terraform and terragrunt ([42d124e](https://github.com/Excoriate/go-terradagger/commit/42d124e01fb12342c0a9637323c14d85262a161d))
+
+
+### Other
+
+* Add params through command flags ([bd2142c](https://github.com/Excoriate/go-terradagger/commit/bd2142ca8bf205c02d502d11eab13cb29ed87580))
+* update hooks ([e116f4d](https://github.com/Excoriate/go-terradagger/commit/e116f4d1e2f63c3a5d8589fba29117f6c11f028e))
+
+
+### Docs
+
+* update documentation ([3fbfc0e](https://github.com/Excoriate/go-terradagger/commit/3fbfc0e94593c8f9156d3f9d354f6a873d4476dd))
+* update getting started ([688a7eb](https://github.com/Excoriate/go-terradagger/commit/688a7ebc36816e949f88a8cd5c7ace66f7662b1c))
+
 ## [1.2.0](https://github.com/Excoriate/go-terradagger/compare/v1.1.0...v1.2.0) (2024-02-08)
 
 
