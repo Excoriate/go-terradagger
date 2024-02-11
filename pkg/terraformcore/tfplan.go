@@ -16,6 +16,12 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 		return nil, nil, err
 	}
 
+	tfLifeCycleCmd := TfLifecycleCMD{}
+	tfContainerCfg := &TerraformContainerConfigOptions{
+		tfOptions: tfOpts,
+		iacConfig: i.Config,
+	}
+
 	var args []string
 	if options != nil {
 		args = utils.MergeSlices(options.GetArgVars(), options.GetArgTerraformVarFiles(), options.GetArgRefreshOnly())
@@ -33,11 +39,10 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 		}
 	}
 
-	lfCMD := TfLifecycleCMD{}
 	// Native lifecycle command (terraform plan, apply, etc.)
-	tfCMDStr, tfCMDStrErr := lfCMD.GetTerraformLifecycleCMDString(&GetTerraformLifecycleCMDStringOptions{
+	tfCMDStr, tfCMDStrErr := tfLifeCycleCmd.GetTerraformLifecycleCMDString(&GetTerraformLifecycleCMDStringOptions{
 		iacConfig:        i.Config,
-		lifecycleCommand: lfCMD.GetPlanCommand(),
+		lifecycleCommand: tfLifeCycleCmd.GetPlanCommand(),
 		args:             args,
 	})
 
@@ -45,7 +50,7 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 		return nil, nil, tfCMDStrErr
 	}
 
-	tfInitCMDStr, tfCMDInitErr := lfCMD.GenerateTFInitCommandStr(&GenerateTFInitCMDStrOptions{
+	tfInitCMDStr, tfCMDInitErr := tfLifeCycleCmd.GenerateTFInitCommandStr(&GenerateTFInitCMDStrOptions{
 		iacConfig: i.Config,
 		initArgs:  []string{},
 	})
@@ -59,15 +64,7 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 
 	td.Log.Info(fmt.Sprintf("running %s plan with the following command: %s", i.Config.GetBinary(), tfCMDStr))
 
-	containerCfg := container.Config{
-		MountPathAbs:         td.Config.GetWorkspaceAbs(),
-		Workdir:              tfOpts.GetModulePath(),
-		ContainerImage:       getContainerImageCfg(td, i.Config, tfOpts),
-		KeepEntryPoint:       false,                           // This will override the container's entrypoint with the command we want to run.
-		AddPrivateGitSupport: tfOpts.GetEnableSSHPrivateGit(), // Add support for private git repos.
-	}
-
-	runtime := container.New(&containerCfg, td)
+	runtime := tfContainerCfg.getContainerRuntime(td, tfContainerCfg.getContainerImageCfg(td))
 	tfContainer := runtime.CreateContainer()
 
 	if tfOpts.IsMirrorAllEnvVarsFromHost() {
