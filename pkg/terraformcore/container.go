@@ -3,6 +3,8 @@ package terraformcore
 import (
 	"fmt"
 
+	"dagger.io/dagger"
+
 	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
 )
@@ -28,6 +30,7 @@ func (t *TerraformContainerConfigOptions) GetIacConfig() IacConfig {
 type TerraformContainerSetup interface {
 	getContainerImageCfg(td *terradagger.TD) container.Image
 	getContainerRuntime(td *terradagger.TD, imageCfg container.Image) container.Runtime
+	AddEnvVarsToTerraformContainer(td *terradagger.TD, runtime container.Runtime, tfContainer *dagger.Container) *dagger.Container
 }
 
 // getContainerImageCfg resolves the container image to use for the given IAC configuration and Terraform options.
@@ -54,4 +57,32 @@ func (t *TerraformContainerConfigOptions) getContainerRuntime(td *terradagger.TD
 	}
 
 	return container.New(&containerCfg, td)
+}
+
+// AddEnvVarsToTerraformContainer configures the container with the appropriate environment variables.
+func (t *TerraformContainerConfigOptions) AddEnvVarsToTerraformContainer(td *terradagger.TD, runtime container.Runtime, tfContainer *dagger.Container) *dagger.Container {
+	tfOpts := t.GetTfOptions()
+
+	// Mirror all host environment variables if specified.
+	if tfOpts.IsMirrorAllEnvVarsFromHost() {
+		return runtime.AddEnvVars(td.Config.GetHostEnvVars(), tfContainer)
+	}
+
+	// Add AWS keys from host if auto-detection is enabled.
+	if tfOpts.IsAutoDetectAWSKeysFromHost() {
+		tfContainer = runtime.AddEnvVars(td.Config.GetAWSEnvVars(), tfContainer)
+	}
+
+	// Inject specified environment variables by keys from the host.
+	if len(tfOpts.GetEnvVarsToInjectByKeyFromHost()) > 0 {
+		envVarsToInject := td.Config.GetEnvVarsByKeys(tfOpts.GetEnvVarsToInjectByKeyFromHost())
+		tfContainer = runtime.AddEnvVars(envVarsToInject, tfContainer)
+	}
+
+	// Automatically detect and add TF_VAR_* environment variables from the host.
+	if tfOpts.IsAutoDetectTFVarsFromHost() {
+		tfContainer = runtime.AddEnvVars(td.Config.GetTerraformEnvVars(), tfContainer)
+	}
+
+	return tfContainer
 }

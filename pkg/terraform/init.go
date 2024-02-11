@@ -18,33 +18,21 @@ type InitOptions struct {
 }
 
 func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions) (*dagger.Container, container.Runtime, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerraform,
-	}
+	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.Init(td, tfOpts, &terraformcore.InitArgsOptions{
+	return tfRun.RunInit(config.IacToolTerraform, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
-	}, []string{})
+	})
 }
 
 func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions) (string, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerraform,
-	}
+	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.InitE(td, tfOpts, &terraformcore.InitArgsOptions{
+	return tfRun.RunInitE(config.IacToolTerraform, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
-	}, []string{})
+	})
 }

@@ -57,23 +57,7 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 
 	runtime := tfContainerCfg.getContainerRuntime(td, tfContainerCfg.getContainerImageCfg(td))
 	tfContainer := runtime.CreateContainer()
-
-	if tfOpts.IsMirrorAllEnvVarsFromHost() {
-		tfContainer = runtime.AddEnvVars(td.Config.GetHostEnvVars(), tfContainer)
-	} else {
-		if tfOpts.IsAutoDetectAWSKeysFromHost() {
-			tfContainer = runtime.AddEnvVars(td.Config.GetAWSEnvVars(), tfContainer)
-		}
-
-		if len(tfOpts.GetEnvVarsToInjectByKeyFromHost()) > 0 {
-			envVarsToInject := td.Config.GetEnvVarsByKeys(tfOpts.GetEnvVarsToInjectByKeyFromHost())
-			tfContainer = runtime.AddEnvVars(envVarsToInject, tfContainer)
-		}
-
-		if tfOpts.IsAutoDetectTFVarsFromHost() {
-			tfContainer = runtime.AddEnvVars(td.Config.GetTerraformEnvVars(), tfContainer)
-		}
-	}
+	tfContainer = tfContainerCfg.AddEnvVarsToTerraformContainer(td, runtime, tfContainer)
 
 	tfCmds := []container.Command{tfCommandShell}
 	tfContainer = runtime.AddCommands(tfCmds, tfContainer)

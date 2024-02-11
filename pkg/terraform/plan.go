@@ -19,33 +19,21 @@ type PlanOptions struct {
 }
 
 func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions) (*dagger.Container, container.Runtime, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerraform,
-	}
+	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.Plan(td, tfOpts, &terraformcore.PlanArgsOptions{
+	return tfRun.RunPlan(config.IacToolTerraform, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
-	}, []string{})
+	})
 }
 
 func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions) (string, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerraform,
-	}
+	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.PlanE(td, tfOpts, &terraformcore.PlanArgsOptions{
+	return tfRun.RunPlanE(config.IacToolTerraform, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
-	}, []string{})
+	})
 }

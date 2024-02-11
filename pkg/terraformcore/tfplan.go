@@ -61,31 +61,14 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 
 	tfCMDStrShell := terradagger.BuildCMDWithSH(tfCMDStr)
 	tfCMDInitStrSHell := terradagger.BuildCMDWithSH(tfInitCMDStr)
+	tfCmds := []container.Command{tfCMDStrShell}
+	tfInitInjected := []container.Command{tfCMDInitStrSHell}
 
 	td.Log.Info(fmt.Sprintf("running %s plan with the following command: %s", i.Config.GetBinary(), tfCMDStr))
 
 	runtime := tfContainerCfg.getContainerRuntime(td, tfContainerCfg.getContainerImageCfg(td))
 	tfContainer := runtime.CreateContainer()
-
-	if tfOpts.IsMirrorAllEnvVarsFromHost() {
-		tfContainer = runtime.AddEnvVars(td.Config.GetHostEnvVars(), tfContainer)
-	} else {
-		if tfOpts.IsAutoDetectAWSKeysFromHost() {
-			tfContainer = runtime.AddEnvVars(td.Config.GetAWSEnvVars(), tfContainer)
-		}
-
-		if len(tfOpts.GetEnvVarsToInjectByKeyFromHost()) > 0 {
-			envVarsToInject := td.Config.GetEnvVarsByKeys(tfOpts.GetEnvVarsToInjectByKeyFromHost())
-			tfContainer = runtime.AddEnvVars(envVarsToInject, tfContainer)
-		}
-
-		if tfOpts.IsAutoDetectTFVarsFromHost() {
-			tfContainer = runtime.AddEnvVars(td.Config.GetTerraformEnvVars(), tfContainer)
-		}
-	}
-
-	tfCmds := []container.Command{tfCMDStrShell}
-	tfInitInjected := []container.Command{tfCMDInitStrSHell}
+	tfContainer = tfContainerCfg.AddEnvVarsToTerraformContainer(td, runtime, tfContainer)
 
 	tfContainer = runtime.AddCommands(tfInitInjected, tfContainer)
 	tfContainer = runtime.AddCommands(tfCmds, tfContainer)
