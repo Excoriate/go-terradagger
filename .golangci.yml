@@ -26,8 +26,8 @@ linters-settings:
         min-complexity: 15
     maligned:
         suggest-new: true
-#    dupl:
-#        threshold: 100
+    dupl:
+        threshold: 100
     goconst:
         min-len: 5
         min-occurrences: 3
@@ -87,24 +87,17 @@ issues:
         - linters:
               - gosec
           text: G306
-    # This is just a warning, not an error, and it's safe for the
-    # due to the 'root' command is adding a bunch of flags, and options
-    # but none of those or the length of the function is a problem, nor
-    # a cognitive-complexity issue. See the function: addPersistentFlagsToRootCMD()
         - linters:
               - funlen
           path: cmd/root\.go
         - linters:
               - gosec
           text: G404
-    # This is just a warning, not an error, and it's safe for the
-    # function RunCommand to run commands with a variable number of arguments
-    # since most of the time, it should be used by known commands.
-    # See: https://github.com/Excoriate/gitbuster/blob/
-    # main/pkg/utils/commands.go#L28-L28
-        - path: utils/commands\.go
-          linters:
-              - gosec
-          text: G204
+        - linters:
+              - dupl
+          path: pkg/terraform/*
+        - linters:
+              - dupl
+          path: pkg/terragrunt/*
 output:
     format: line-number

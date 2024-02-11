@@ -8,7 +8,7 @@ on:
         types: [opened, edited, synchronize]
 
 env:
-    TF_ROOT: test-data/terraform
+    TF_ROOT: test/terraform
 
 jobs:
     set_up_job:

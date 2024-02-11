@@ -1,5 +1,5 @@
 ---
-name: Go Linter Library
+name: Go Linter
 on:
     workflow_dispatch:
     push:
@@ -25,5 +25,4 @@ jobs:
               with:
                   version: v1.54
                   args: --config .golangci.yml
-                  github_token: ${{ secrets.GITHUB_TOKEN }}
-                  reporter: github-pr-check
+                  github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,9 +1,11 @@
 ---
-name: Go Build TerraDagger CLI
+name: Go Build
 on:
     workflow_dispatch:
     push:
     pull_request:
+env:
+    CLI_NAME: terradagger-cli
 jobs:
     build-supported-platforms:
         name: Go Build
@@ -31,7 +33,7 @@ jobs:
             - name: Build for ${{ matrix.goos }}/${{ matrix.goarch }}
               working-directory: ${{ github.workspace }}/cli
               run: |
-                  GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/go-terradagger
+                  GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/${{ env.CLI_NAME }}
     build-supported-go-version:
         name: Go Build Versions
         needs: build-supported-platforms
@@ -49,4 +51,4 @@ jobs:
             - name: Build for ${{ matrix.go-versions }}
               working-directory: ${{ github.workspace }}/cli
               run: |
-                  go build -o bin/go-terradagger
+                  go build -o bin/${{ env.CLI_NAME }}

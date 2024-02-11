@@ -1,5 +1,5 @@
 ---
-name: Go Tests Library
+name: Go Tests
 on:
     workflow_dispatch:
     push:
@@ -17,4 +17,5 @@ jobs:
               with:
                   go-version: ${{ env.GO_VERSION }}
             - name: Test
+              working-directory: ${{ github.workspace }}
               run: go test -v ./...
