@@ -6,10 +6,9 @@
 
 ---
 [![Release](https://github.com/Excoriate/go-terradagger/actions/workflows/release.yaml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/release.yaml)
-[![Go Build TerraDagger CLI](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-build-cli.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-build-cli.yml)
-[![Go Tests Library](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-tests-library.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-tests-library.yml)
-[![Go Linter Library](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-linter-library.yaml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/golang-linter-library.yaml)
-[![Test Data (Terraform CI)](https://github.com/Excoriate/go-terradagger/actions/workflows/test-data-terraform-ci.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/test-data-terraform-ci.yml)
+[![Go Build](https://github.com/Excoriate/go-terradagger/actions/workflows/go-build.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/go-build.yml)
+[![Go Linter](https://github.com/Excoriate/go-terradagger/actions/workflows/go-ci-lint.yaml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/go-ci-lint.yaml)
+[![Go Tests](https://github.com/Excoriate/go-terradagger/actions/workflows/go-ci-tests.yml/badge.svg)](https://github.com/Excoriate/go-terradagger/actions/workflows/go-ci-tests.yml)
 
 ---
 **TerraDagger** is a **GO library** that provides a set of functions and patterns for building portable CI/CD pipelines (as code) for your infrastructure-as-code. It's based on the wonderful [Dagger](https://dagger.io) pipeline-as-code project, and heavily inspired by [Terratest](https://terratest.gruntwork.io). The problem that TerraDagger tries to solve is to provide a simple way to run your [Terraform](https://www.terraform.io/) code in a portable way, and also to provide a way to run your pipelines in a containerized way, so you can run your pipelines in any environment, and also in any CI/CD platform.
@@ -29,15 +28,20 @@ go get github.com/Excoriate/go-terradagger
 - [Go](https://golang.org/doc/install) >= 1.18
 - [Docker](https://docs.docker.com/get-docker/) >= 20.10.7
 - [Dagger](https://dagger.io)
-- [Terraform](https://www.terraform.io/downloads.html)
 
 >**NOTE**: For the tools used in this project, please check the [Makefile](./Makefile), and the [Taskfile](./Taskfile.yml) files. You'll also need [pre-commit](https://pre-commit.com/) installed.
 
 ---
 
-### Getting Started 🚀
+## Features 🎉
+* **Portable**: TerraDagger is built to be used in any CI/CD platform, and also in any environment (including your local machine).
+* **Simple**: TerraDagger is built to be simple to use, if you're familiar with [Terratest](https://terratest.gruntwork.io), then you'll find this library very similar.
+* **IAC Support**: Supports [Terraform](https://www.terraform.io/) and [Terragrunt](https://terragrunt.gruntwork.io/).
 
-If you're familiar with [Terratest](https://terratest.gruntwork.io), then you'll find this library very similar. The main difference is that this library is based on [Dagger](https://dagger.io), and it's meant to be used as a library.
+---
+
+## Getting Started 🚀
+
 
 ```go
 td, err := terradagger.New(ctx, &terradagger.ClientOptions{
@@ -72,6 +76,10 @@ _ = terraform.Destroy(td, terraformOptions, &terraform.DestroyOptions{
 })
 
 ```
+
+>**NOTE**: To see a full working example, please check the [**terradagger-cli**](cli/) that's built in this repository
+
+
 
 ## Roadmap 🗓️
 
