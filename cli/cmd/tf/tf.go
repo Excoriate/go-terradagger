@@ -43,7 +43,7 @@ var Cmd = &cobra.Command{
 
 		defer td.Engine.GetEngine().Close()
 
-		tfOpptions :=
+		tfOptions :=
 			terraformcore.WithOptions(td, &terraformcore.TfOptions{
 				ModulePath:                   viper.GetString("module"),
 				EnableSSHPrivateGit:          true,
@@ -51,7 +51,7 @@ var Cmd = &cobra.Command{
 				EnvVarsToInjectByKeyFromHost: []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"},
 			})
 
-		_, tfInitErr := terraform.InitE(td, tfOpptions, terraform.InitOptions{})
+		_, tfInitErr := terraform.InitE(td, tfOptions, terraform.InitOptions{})
 		if tfInitErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
 				Message: tfInitErr.Error(),
@@ -59,7 +59,7 @@ var Cmd = &cobra.Command{
 			})
 		}
 
-		_, tfPlanErr := terraform.PlanE(td, tfOpptions, terraform.PlanOptions{
+		_, tfPlanErr := terraform.PlanE(td, tfOptions, terraform.PlanOptions{
 			Vars: []terraformcore.TFInputVariable{
 				{
 					Name:  "is_enabled",
@@ -73,7 +73,7 @@ var Cmd = &cobra.Command{
 			})
 		}
 
-		_, tfApplyErr := terraform.ApplyE(td, tfOpptions, terraform.ApplyOptions{
+		_, tfApplyErr := terraform.ApplyE(td, tfOptions, terraform.ApplyOptions{
 			AutoApprove: true,
 			Vars: []terraformcore.TFInputVariable{
 				{
@@ -88,7 +88,7 @@ var Cmd = &cobra.Command{
 			})
 		}
 
-		_, tfDestroyErr := terraform.DestroyE(td, tfOpptions, terraform.DestroyOptions{
+		_, tfDestroyErr := terraform.DestroyE(td, tfOptions, terraform.DestroyOptions{
 			AutoApprove: true,
 			Vars: []terraformcore.TFInputVariable{
 				{

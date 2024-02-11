@@ -85,18 +85,16 @@ func (t *TfLifecycleCMD) GetTerraformLifecycleCMDString(options *GetTerraformLif
 	if cmdBinary == config.IacToolTerragrunt {
 		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
 			Binary:      cmdBinary,
-			Command:     t.GetPlanCommand(),
+			Command:     options.lifecycleCommand,
 			CommandArgs: options.args,
 		})
-
 	} else {
 		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
 			Binary:      cmdBinary,
-			Command:     t.GetPlanCommand(),
+			Command:     options.lifecycleCommand,
 			CommandArgs: options.args,
 		})
 	}
-
 	return cmdStr, nil
 }
 

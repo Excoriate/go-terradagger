@@ -34,39 +34,30 @@ func (i *IasC) Apply(td *terradagger.TD, tfOpts TfGlobalOptions, options ApplyAr
 	}
 
 	lfCMD := TfLifecycleCMD{}
+	// Native lifecycle command (terraform plan, apply, etc.)
+	tfCMDStr, tfCMDStrErr := lfCMD.GetTerraformLifecycleCMDString(&GetTerraformLifecycleCMDStringOptions{
+		iacConfig:        i.Config,
+		lifecycleCommand: lfCMD.GetApplyCommand(),
+		args:             args,
+	})
 
-	var cmdStr string
-	var autoInjectedInitCommand string
-	if i.Config.GetBinary() == config.IacToolTerragrunt {
-		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
-			Binary:      i.Config.GetBinary(),
-			Command:     lfCMD.GetApplyCommand(),
-			CommandArgs: args,
-		})
-
-		autoInjectedInitCommand = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
-			Binary:      i.Config.GetBinary(),
-			Command:     lfCMD.GetInitCommand(),
-			CommandArgs: []string{},
-		})
-	} else {
-		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
-			Binary:      i.Config.GetBinary(),
-			Command:     lfCMD.GetApplyCommand(),
-			CommandArgs: args,
-		})
-
-		autoInjectedInitCommand = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
-			Binary:      i.Config.GetBinary(),
-			Command:     lfCMD.GetInitCommand(),
-			CommandArgs: []string{},
-		})
+	if tfCMDStrErr != nil {
+		return nil, nil, tfCMDStrErr
 	}
 
-	tfCommandShell := terradagger.BuildCMDWithSH(cmdStr)
-	tfInitInjectedCommandShell := terradagger.BuildCMDWithSH(autoInjectedInitCommand)
+	tfInitCMDStr, tfCMDInitErr := lfCMD.GenerateTFInitCommandStr(&GenerateTFInitCMDStrOptions{
+		iacConfig: i.Config,
+		initArgs:  []string{},
+	})
 
-	td.Log.Info(fmt.Sprintf("running %s with the following command: %s", i.Config.GetBinary(), cmdStr))
+	if tfCMDInitErr != nil {
+		return nil, nil, tfCMDInitErr
+	}
+
+	tfCMDStrShell := terradagger.BuildCMDWithSH(tfCMDStr)
+	tfCMDInitStrSHell := terradagger.BuildCMDWithSH(tfInitCMDStr)
+
+	td.Log.Info(fmt.Sprintf("running %s with the following command: %s", i.Config.GetBinary(), tfCMDStr))
 
 	// Support for custom container image
 	var imageCfg container.Image
@@ -109,8 +100,8 @@ func (i *IasC) Apply(td *terradagger.TD, tfOpts TfGlobalOptions, options ApplyAr
 		}
 	}
 
-	tfCmds := []container.Command{tfCommandShell}
-	tfInitInjected := []container.Command{tfInitInjectedCommandShell}
+	tfCmds := []container.Command{tfCMDStrShell}
+	tfInitInjected := []container.Command{tfCMDInitStrSHell}
 
 	tfContainer = runtime.AddCommands(tfInitInjected, tfContainer)
 	tfContainer = runtime.AddCommands(tfCmds, tfContainer)

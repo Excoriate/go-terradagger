@@ -36,25 +36,19 @@ func (i *IasC) Init(td *terradagger.TD, tfOpts TfGlobalOptions, options InitArgs
 	}
 
 	lfCMD := TfLifecycleCMD{}
+	// Native lifecycle command (terraform plan, apply, etc.)
+	tfCMDStr, tfCMDStrErr := lfCMD.GetTerraformLifecycleCMDString(&GetTerraformLifecycleCMDStringOptions{
+		iacConfig:        i.Config,
+		lifecycleCommand: lfCMD.GetInitCommand(),
+		args:             args,
+	})
 
-	var cmdStr string
-	if i.Config.GetBinary() == config.IacToolTerragrunt {
-		cmdStr = terradagger.BuildTerragruntCommand(terradagger.BuildTerragruntCommandOptions{
-			Binary:      i.Config.GetBinary(),
-			Command:     lfCMD.GetInitCommand(),
-			CommandArgs: args,
-		})
-	} else {
-		cmdStr = terradagger.BuildTerraformCommand(terradagger.BuildTerraformCommandOptions{
-			Binary:      i.Config.GetBinary(),
-			Command:     lfCMD.GetInitCommand(),
-			CommandArgs: args,
-		})
+	if tfCMDStrErr != nil {
+		return nil, nil, tfCMDStrErr
 	}
 
-	tfCommandShell := terradagger.BuildCMDWithSH(cmdStr)
-
-	td.Log.Info(fmt.Sprintf("running %s plan with the following command: %s", i.Config.GetBinary(), cmdStr))
+	tfCommandShell := terradagger.BuildCMDWithSH(tfCMDStr)
+	td.Log.Info(fmt.Sprintf("running %s plan with the following command: %s", i.Config.GetBinary(), tfCMDStr))
 
 	// Support for custom container image
 	var imageCfg container.Image
