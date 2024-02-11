@@ -11,10 +11,10 @@ type TerraformRunner interface {
 	RunInitE(binary string, options *InitArgsOptions) (string, error)
 	RunPlan(binary string, options *PlanArgsOptions) (*dagger.Container, container.Runtime, error)
 	RunPlanE(binary string, options *PlanArgsOptions) (string, error)
-	Apply(binary string, options *ApplyArgsOptions) (*dagger.Container, container.Runtime, error)
-	ApplyE(binary string, options *ApplyArgsOptions) (string, error)
-	Destroy(binary string, options *DestroyArgsOptions) (*dagger.Container, container.Runtime, error)
-	DestroyE(binary string, options *DestroyArgsOptions) (string, error)
+	RunApply(binary string, options *ApplyArgsOptions) (*dagger.Container, container.Runtime, error)
+	RunApplyE(binary string, options *ApplyArgsOptions) (string, error)
+	RunDestroy(binary string, options *DestroyArgsOptions) (*dagger.Container, container.Runtime, error)
+	RunDestroyE(binary string, options *DestroyArgsOptions) (string, error)
 }
 
 type TerraformRunnerOptions struct {
@@ -67,7 +67,7 @@ func (t *TerraformRunnerOptions) RunPlanE(binary string, args *PlanArgsOptions) 
 	return tfIaac.PlanE(t.td, t.TfGlobalOptions, args, []string{})
 }
 
-func (t *TerraformRunnerOptions) Apply(binary string, args *ApplyArgsOptions) (*dagger.Container, container.Runtime, error) {
+func (t *TerraformRunnerOptions) RunApply(binary string, args *ApplyArgsOptions) (*dagger.Container, container.Runtime, error) {
 	tfIaac := IasC{
 		Config: getIaacConfigByBinary(binary),
 	}
@@ -75,7 +75,7 @@ func (t *TerraformRunnerOptions) Apply(binary string, args *ApplyArgsOptions) (*
 	return tfIaac.Apply(t.td, t.TfGlobalOptions, args, []string{})
 }
 
-func (t *TerraformRunnerOptions) ApplyE(binary string, args *ApplyArgsOptions) (string, error) {
+func (t *TerraformRunnerOptions) RunApplyE(binary string, args *ApplyArgsOptions) (string, error) {
 	tfIaac := IasC{
 		Config: getIaacConfigByBinary(binary),
 	}
@@ -83,7 +83,7 @@ func (t *TerraformRunnerOptions) ApplyE(binary string, args *ApplyArgsOptions) (
 	return tfIaac.ApplyE(t.td, t.TfGlobalOptions, args, []string{})
 }
 
-func (t *TerraformRunnerOptions) Destroy(binary string, args *DestroyArgsOptions) (*dagger.Container, container.Runtime, error) {
+func (t *TerraformRunnerOptions) RunDestroy(binary string, args *DestroyArgsOptions) (*dagger.Container, container.Runtime, error) {
 	tfIaac := IasC{
 		Config: getIaacConfigByBinary(binary),
 	}
@@ -91,7 +91,7 @@ func (t *TerraformRunnerOptions) Destroy(binary string, args *DestroyArgsOptions
 	return tfIaac.Destroy(t.td, t.TfGlobalOptions, args, []string{})
 }
 
-func (t *TerraformRunnerOptions) DestroyE(binary string, args *DestroyArgsOptions) (string, error) {
+func (t *TerraformRunnerOptions) RunDestroyE(binary string, args *DestroyArgsOptions) (string, error) {
 	tfIaac := IasC{
 		Config: getIaacConfigByBinary(binary),
 	}

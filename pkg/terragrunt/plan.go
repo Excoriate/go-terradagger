@@ -18,34 +18,22 @@ type PlanOptions struct {
 	Vars []terraformcore.TFInputVariable
 }
 
-func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, _ GlobalOptions) (*dagger.Container, container.Runtime, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, _ terraformcore.TerragruntConfig) (*dagger.Container, container.Runtime, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.Plan(td, tfOpts, &terraformcore.PlanArgsOptions{
+	return tgRun.RunPlan(config.IacToolTerragrunt, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
-	}, []string{})
+	})
 }
 
-func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, _ GlobalOptions) (string, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options PlanOptions, _ terraformcore.TerragruntConfig) (string, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.PlanE(td, tfOpts, &terraformcore.PlanArgsOptions{
+	return tgRun.RunPlanE(config.IacToolTerragrunt, &terraformcore.PlanArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
-	}, []string{})
+	})
 }

@@ -17,34 +17,22 @@ type InitOptions struct {
 	Upgrade bool
 }
 
-func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, _ GlobalOptions) (*dagger.Container, container.Runtime, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, _ terraformcore.TerragruntConfig) (*dagger.Container, container.Runtime, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.Init(td, tfOpts, &terraformcore.InitArgsOptions{
+	return tgRun.RunInit(config.IacToolTerragrunt, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
-	}, []string{})
+	})
 }
 
-func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, _ GlobalOptions) (string, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options InitOptions, _ terraformcore.TerragruntConfig) (string, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.InitE(td, tfOpts, &terraformcore.InitArgsOptions{
+	return tgRun.RunInitE(config.IacToolTerragrunt, &terraformcore.InitArgsOptions{
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
-	}, []string{})
+	})
 }

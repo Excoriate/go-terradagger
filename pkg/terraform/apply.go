@@ -23,7 +23,7 @@ type ApplyOptions struct {
 func Apply(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options ApplyOptions) (*dagger.Container, container.Runtime, error) {
 	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	return tfRun.Apply(config.IacToolTerraform, &terraformcore.ApplyArgsOptions{
+	return tfRun.RunApply(config.IacToolTerraform, &terraformcore.ApplyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
@@ -34,7 +34,7 @@ func Apply(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options App
 func ApplyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options ApplyOptions) (string, error) {
 	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	return tfRun.ApplyE(config.IacToolTerraform, &terraformcore.ApplyArgsOptions{
+	return tfRun.RunApplyE(config.IacToolTerraform, &terraformcore.ApplyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,

@@ -1,6 +1,6 @@
-package terragrunt
+package terraformcore
 
-type TgGlobalOptions struct {
+type TerragruntOptions struct {
 	// The path to the Terragrunt config file. Default is terragrunt.hcl.
 	Config string `json:"terragrunt-config,omitempty"`
 
@@ -99,4 +99,16 @@ type TgGlobalOptions struct {
 
 	// Enables caching of includes during partial parsing operations. Will also be used for the --terragrunt-iam-role option if provided.
 	UsePartialParseConfigCache bool `json:"terragrunt-use-partial-parse-config-cache,omitempty"`
+}
+
+type TerragruntConfig interface {
+	GetConfig() []string
+}
+
+func (tg *TerragruntOptions) GetConfig() []string {
+	if tg.Config == "" {
+		return []string{}
+	}
+
+	return []string{"-config", tg.Config}
 }

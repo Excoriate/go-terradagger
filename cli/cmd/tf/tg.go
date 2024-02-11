@@ -3,7 +3,7 @@ package tf
 import (
 	"context"
 
-	"github.com/Excoriate/go-terradagger/pkg/terraform"
+	"github.com/Excoriate/go-terradagger/pkg/terragrunt"
 
 	"github.com/Excoriate/go-terradagger/cli/internal/tui"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
@@ -13,8 +13,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Cmd = &cobra.Command{
-	Use:   "tf",
+var TgCMD = &cobra.Command{
+	Use:   "tg",
 	Short: "Execute terraform commands using go-terradagger",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
@@ -43,7 +43,7 @@ var Cmd = &cobra.Command{
 
 		defer td.Engine.GetEngine().Close()
 
-		tfOptions :=
+		tgOptions :=
 			terraformcore.WithOptions(td, &terraformcore.TfOptions{
 				ModulePath:                   viper.GetString("module"),
 				EnableSSHPrivateGit:          true,
@@ -51,55 +51,20 @@ var Cmd = &cobra.Command{
 				EnvVarsToInjectByKeyFromHost: []string{"AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"},
 			})
 
-		_, tfInitErr := terraform.InitE(td, tfOptions, terraform.InitOptions{})
-		if tfInitErr != nil {
+		_, tgInitErr := terragrunt.InitE(td, tgOptions, terragrunt.InitOptions{}, nil)
+		if tgInitErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
-				Error:   tfInitErr,
+				Message: tgInitErr.Error(),
+				Error:   tgInitErr,
 			})
 		}
 
-		_, tfPlanErr := terraform.PlanE(td, tfOptions, terraform.PlanOptions{
-			Vars: []terraformcore.TFInputVariable{
-				{
-					Name:  "is_enabled",
-					Value: "true",
-				}},
-		})
-		if tfPlanErr != nil {
-			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
-				Error:   tfPlanErr,
-			})
-		}
+		_, tgPlanErr := terragrunt.PlanE(td, tgOptions, terragrunt.PlanOptions{}, nil)
 
-		_, tfApplyErr := terraform.ApplyE(td, tfOptions, terraform.ApplyOptions{
-			AutoApprove: true,
-			Vars: []terraformcore.TFInputVariable{
-				{
-					Name:  "is_enabled",
-					Value: "true",
-				}},
-		})
-		if tfApplyErr != nil {
+		if tgPlanErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
-				Error:   tfApplyErr,
-			})
-		}
-
-		_, tfDestroyErr := terraform.DestroyE(td, tfOptions, terraform.DestroyOptions{
-			AutoApprove: true,
-			Vars: []terraformcore.TFInputVariable{
-				{
-					Name:  "is_enabled",
-					Value: "true",
-				}},
-		})
-		if tfDestroyErr != nil {
-			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
-				Error:   tfDestroyErr,
+				Message: tgInitErr.Error(),
+				Error:   tgPlanErr,
 			})
 		}
 	},

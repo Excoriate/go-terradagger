@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	workspace string
-	module    string
-	tfVersion string
+	workspace        string
+	module           string
+	terraformVersion string
 )
 var rootCmd = &cobra.Command{
 	Use:   "terradagger",
@@ -27,10 +27,12 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&workspace, "workspace", "w", "", "The workspace to run the Dagger engine in")
 	rootCmd.PersistentFlags().StringVarP(&module, "module", "m", "", "The module to run the Dagger engine in")
-	rootCmd.PersistentFlags().StringVarP(&tfVersion, "tf-version", "v", "", "The terraform version to use")
+	rootCmd.PersistentFlags().StringVarP(&terraformVersion, "tf-version", "v", "", "The version of Terraform to use")
+
 	_ = viper.BindPFlags(rootCmd.PersistentFlags())
 
 	rootCmd.AddCommand(tf.Cmd)
+	rootCmd.AddCommand(tf.TgCMD)
 }
 
 func Execute() {

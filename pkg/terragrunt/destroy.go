@@ -20,36 +20,24 @@ type DestroyOptions struct {
 	AutoApprove bool
 }
 
-func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions) (*dagger.Container, container.Runtime, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions, _ terraformcore.TerragruntConfig) (*dagger.Container, container.Runtime, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.Destroy(td, tfOpts, &terraformcore.DestroyArgsOptions{
+	return tgRun.RunDestroy(config.IacToolTerragrunt, &terraformcore.DestroyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
-	}, []string{})
+	})
 }
 
-func DestroyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions) (string, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func DestroyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions, _ terraformcore.TerragruntConfig) (string, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.DestroyE(td, tfOpts, &terraformcore.DestroyArgsOptions{
+	return tgRun.RunDestroyE(config.IacToolTerragrunt, &terraformcore.DestroyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
-	}, []string{})
+	})
 }

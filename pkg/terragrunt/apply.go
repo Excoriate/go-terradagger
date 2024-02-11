@@ -20,36 +20,24 @@ type ApplyOptions struct {
 	AutoApprove bool
 }
 
-func Apply(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options ApplyOptions) (*dagger.Container, container.Runtime, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func Apply(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options ApplyOptions, _ terraformcore.TerragruntConfig) (*dagger.Container, container.Runtime, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.Apply(td, tfOpts, &terraformcore.ApplyArgsOptions{
+	return tgRun.RunApply(config.IacToolTerragrunt, &terraformcore.ApplyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
-	}, []string{})
+	})
 }
 
-func ApplyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options ApplyOptions) (string, error) {
-	IaacCfg := terraformcore.IacConfigOptions{
-		Binary: config.IacToolTerragrunt,
-	}
+func ApplyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options ApplyOptions, _ terraformcore.TerragruntConfig) (string, error) {
+	tgRun := terraformcore.NewTerragruntRunner(td, tfOpts, nil)
 
-	tfIaac := terraformcore.IasC{
-		Config: &IaacCfg,
-	}
-
-	return tfIaac.ApplyE(td, tfOpts, &terraformcore.ApplyArgsOptions{
+	return tgRun.RunApplyE(config.IacToolTerragrunt, &terraformcore.ApplyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
-	}, []string{})
+	})
 }

@@ -23,7 +23,7 @@ type DestroyOptions struct {
 func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions) (*dagger.Container, container.Runtime, error) {
 	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	return tfRun.Destroy(config.IacToolTerraform, &terraformcore.DestroyArgsOptions{
+	return tfRun.RunDestroy(config.IacToolTerraform, &terraformcore.DestroyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
@@ -34,7 +34,7 @@ func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options D
 func DestroyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options DestroyOptions) (string, error) {
 	tfRun := terraformcore.NewTerraformRunner(td, tfOpts)
 
-	return tfRun.DestroyE(config.IacToolTerraform, &terraformcore.DestroyArgsOptions{
+	return tfRun.RunDestroyE(config.IacToolTerraform, &terraformcore.DestroyArgsOptions{
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
