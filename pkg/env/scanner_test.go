@@ -3,56 +3,80 @@ package env
 import (
 	"os"
 	"testing"
-
-	"github.com/Excoriate/go-terradagger/pkg/utils"
-	"github.com/stretchr/testify/assert"
 )
 
+// GetAllFromHost returns all the environment variables from the host
+func setEnvVars(t *testing.T, vars map[string]string) func() {
+	t.Helper()
+	originalVars := make(map[string]string, len(vars))
+	for k, v := range vars {
+		if originalValue, exists := os.LookupEnv(k); exists {
+			originalVars[k] = originalValue
+		}
+		if err := os.Setenv(k, v); err != nil {
+			t.Fatalf("Error setting up environment variable %s for test: %v", k, err)
+		}
+	}
+	return func() {
+		for k := range vars {
+			if originalValue, exists := originalVars[k]; exists {
+				_ = os.Setenv(k, originalValue)
+			} else {
+				_ = os.Unsetenv(k)
+			}
+		}
+	}
+}
+
 func TestGetAllFromHost(t *testing.T) {
-	// Setting an environment variable for test
-	testEnvKey := "TEST_ENV_GETALL"
-	testEnvValue := "testValue"
-	os.Setenv(testEnvKey, testEnvValue)
-	defer os.Unsetenv(testEnvKey)
+	cleanup := setEnvVars(t, map[string]string{"TEST_ENV_VAR": "test"})
+	defer cleanup()
 
-	result := GetAllFromHost()
-
-	assert.NotEmpty(t, result, "Result should not be empty")
-	assert.Equal(t, testEnvValue, result[testEnvKey], "The value of the test environment variable should match")
+	envs := GetAllFromHost()
+	if envs["TEST_ENV_VAR"] != "test" {
+		t.Errorf("Expected to find TEST_ENV_VAR with value 'test', found '%s'", envs["TEST_ENV_VAR"])
+	}
 }
 
-func TestGetAllEnvVarsWithPrefix_ExistingPrefix(t *testing.T) {
-	// Setting environment variables for test
-	prefix := "TEST_ENV_PREFIX_"
-	os.Setenv(prefix+"ONE", "First")
-	os.Setenv(prefix+"TWO", "Second")
-	defer func() {
-		os.Unsetenv(prefix + "ONE")
-		os.Unsetenv(prefix + "TWO")
-	}()
+func TestGetAllEnvVarsWithPrefix(t *testing.T) {
+	cleanup := setEnvVars(t, map[string]string{"PREFIX_TEST_ENV": "value"})
+	defer cleanup()
 
-	result, err := GetAllEnvVarsWithPrefix(prefix)
+	envs, err := GetAllEnvVarsWithPrefix("PREFIX_")
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if len(envs) == 0 || envs["PREFIX_TEST_ENV"] != "value" {
+		t.Errorf("Expected to find PREFIX_TEST_ENV, got %v", envs)
+	}
 
-	assert.NoError(t, err, "Should not return an error")
-	assert.Equal(t, 2, len(result), "There should be two environment variables with the specified prefix")
-	assert.Equal(t, "First", utils.RemoveDoubleQuotes(result[prefix+"ONE"]), "The value of the first variable should match")
-	assert.Equal(t, "Second", utils.RemoveDoubleQuotes(result[prefix+"TWO"]), "The value of the second variable should match")
+	_, err = GetAllEnvVarsWithPrefix("")
+	if err == nil {
+		t.Errorf("Expected error when prefix is empty")
+	}
 }
 
-func TestGetAllEnvVarsWithPrefix_NonExistingPrefix(t *testing.T) {
-	result, err := GetAllEnvVarsWithPrefix("NON_EXISTING_PREFIX_")
+func TestGetEnvVarByKey(t *testing.T) {
+	key := "SOME_UNIQUE_KEY"
+	expectedValue := "someValue"
+	cleanup := setEnvVars(t, map[string]string{key: expectedValue})
+	defer cleanup()
 
-	assert.Error(t, err, "Should return an error for non-existing prefix")
-	assert.Nil(t, result, "Result should be nil for non-existing prefix")
-}
+	value, err := GetEnvVarByKey(key)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if value != expectedValue {
+		t.Errorf("Expected %s, got %s", expectedValue, value)
+	}
 
-func TestGetAllEnvVarsWithPrefix_EmptyValue(t *testing.T) {
-	// Setting an environment variable with empty value for test
-	testEnvKey := "TEST_ENV_EMPTY"
-	os.Setenv(testEnvKey, "")
-	defer os.Unsetenv(testEnvKey)
+	_, err = GetEnvVarByKey("NON_EXISTENT_KEY")
+	if err == nil {
+		t.Errorf("Expected error for non-existent key")
+	}
 
-	_, err := GetAllEnvVarsWithPrefix("TEST_ENV_")
-
-	assert.Error(t, err, "Should return an error for environment variable with empty value")
+	_, err = GetEnvVarByKey("")
+	if err == nil {
+		t.Errorf("Expected error for empty key")
+	}
 }

@@ -1,0 +1,53 @@
+---
+version: '3'
+vars:
+    GOLANGCI_LINT_CONFIG_FILE: '{{default ".golangci.yml" .GOLANGCI_LINT_CONFIG_FILE}}'
+tasks:
+    inspect-workdir:
+        desc: Inspect working directory
+        cmds:
+            - echo ""
+            - echo ""
+            - echo "---------------------------------------"
+            - echo " Inspect working directory "
+            - echo "---------------------------------------"
+            - echo ""
+            - pwd
+            - ls -ltrah
+            - echo ""
+            - echo "***************************"
+            - echo ""
+            - echo ""
+        silent: true
+    go-tidy:
+        desc: Tidy go modules
+        cmds:
+            - go mod tidy
+    go-fmt:
+        desc: Run go fmt against code
+        cmds:
+            - go fmt -x ./...
+    go-vet:
+        desc: Run go vet against code
+        cmds:
+            - go vet ./...
+    go-lint:
+        desc: Run go lint against code
+        cmds:
+            - golangci-lint run -v -E gofmt --config {{.GOLANGCI_LINT_CONFIG_FILE}}
+    go-style:
+        desc: Code style -> fmt,vet,lint
+        deps: [go-fmt, go-vet, go-lint]
+    go-test:
+        desc: Run unit test-data
+        cmds:
+            - go test -race -v ./...
+    go-test-nocache:
+        desc: Run unit test without cache
+        cmds:
+            - go test ./... -count=1 -v
+    go-ci:
+        desc: Run all the test-data and code checks
+        cmds:
+            - task: go-style
+            - task: go-tidy

@@ -18,7 +18,8 @@ includes:
         taskfile: ./taskfiles/taskfile.precommit.yml
     tf:
         taskfile: ./taskfiles/Taskfile.terraform.yml
-
+    golang:
+        taskfile: ./taskfiles/Taskfile.go.yml
 tasks:
     # ***********************
     # Common tasks
@@ -39,35 +40,16 @@ tasks:
       # ****************************************************
       # Go Tasks
       # ****************************************************
-    go-tidy:
-        desc: Tidy go modules
+    go-ci:
+        desc: Execute all the go CI tasks in the pkg/root module.
+        dir: cli
         cmds:
-            - go mod tidy
-    go-fmt:
-        desc: Run go fmt against code
-        cmds:
-            - go fmt -x ./...
-    go-vet:
-        desc: Run go vet against code
-        cmds:
-            - go vet ./...
-    go-lint:
-        desc: Run go lint against code
-        cmds:
-            - golangci-lint run -v -E gofmt --config .golangci.yml
-    go-style:
-        desc: Code style -> fmt,vet,lint
-        deps: [go-fmt, go-vet, go-lint]
-    go-test:
-        desc: Run unit test-data
-        cmds:
-            - echo "===========> Run unit test-data"
-            - go test-data -race -v ./...
-    go-test-nocache:
-        desc: Run unit test without cache
-        cmds:
-            - echo "===========> Run unit test-data"
-            - go test ./... -count=1 -v
+            - task: golang:go-tidy
+            - task: golang:go-fmt
+            - task: golang:go-vet
+            - task: golang:go-lint
+            - task: golang:go-test
+
     cli-build:
         desc: Build the terradagger CLi
         dir: ./cli
@@ -89,13 +71,6 @@ tasks:
         dir: ./cli
         cmds:
             - go run ./main.go {{.CLI_ARGS}}
-    go-ci:
-        desc: Run all the test-data and code checks
-        cmds:
-            - task: go-style
-            - task: go-tidy
-#            - task: go-test-data
-            - task: go-build
 
     # ***********************
     # Terraform task (modules)
