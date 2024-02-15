@@ -1,23 +1,18 @@
 package erroer
 
-const ErrTerraformCoreInvalidConfiguration = "Invalid configuration error: "
+import "fmt"
 
 type ErrTerraformCoreInvalidConfigurationError struct {
-	ErrWrapped error
-	Msg        string
+	BaseError
 }
 
-func (e *ErrTerraformCoreInvalidConfigurationError) Error() string {
-	if e.ErrWrapped != nil {
-		return ErrTerraformCoreInvalidConfiguration + e.Msg + ": " + e.ErrWrapped.Error()
-	}
-
-	return ErrTerraformCoreInvalidConfiguration + e.Msg
-}
+const ErrTerraformCoreInvalidConfigurationPrefix = "Invalid configuration error while using Terraform Core APIs "
 
 func NewErrTerraformCoreInvalidConfigurationError(errMsg string, err error) *ErrTerraformCoreInvalidConfigurationError {
 	return &ErrTerraformCoreInvalidConfigurationError{
-		ErrWrapped: err,
-		Msg:        errMsg,
+		BaseError: BaseError{
+			ErrWrapped: err,
+			ErrMsg:     fmt.Sprintf("%s: %s", ErrTerraformCoreInvalidConfigurationPrefix, errMsg),
+		},
 	}
 }

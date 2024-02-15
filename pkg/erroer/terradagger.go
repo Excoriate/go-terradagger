@@ -1,23 +1,21 @@
 package erroer
 
-const ErrTerraDaggerInvalidArgumentErrorPrefix = "Invalid argument error: "
+import (
+	"fmt"
+)
 
 type ErrTerraDaggerInvalidArgumentError struct {
-	ErrWrapped error
-	Msg        string
+	BaseError // Embedding BaseError
 }
 
-func (e *ErrTerraDaggerInvalidArgumentError) Error() string {
-	if e.ErrWrapped != nil {
-		return ErrTerraDaggerInvalidArgumentErrorPrefix + e.Msg + ": " + e.ErrWrapped.Error()
-	}
+const ErrTerraDaggerInvalidArgumentErrorPrefix = "Invalid argument errors"
 
-	return ErrTerraDaggerInvalidArgumentErrorPrefix + e.Msg
-}
-
+// NewErrTerraDaggerInvalidArgumentError creates a new ErrTerraDaggerInvalidArgumentError. It utilizes the BaseError struct for common functionality.
 func NewErrTerraDaggerInvalidArgumentError(errMsg string, err error) *ErrTerraDaggerInvalidArgumentError {
 	return &ErrTerraDaggerInvalidArgumentError{
-		ErrWrapped: err,
-		Msg:        errMsg,
+		BaseError: BaseError{
+			ErrWrapped: err,
+			ErrMsg:     fmt.Sprintf("%s: %s", ErrTerraDaggerInvalidArgumentErrorPrefix, errMsg),
+		},
 	}
 }
