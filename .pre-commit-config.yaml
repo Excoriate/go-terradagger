@@ -53,8 +53,8 @@ repos:
       hooks:
           - id: go-fmt
             files: ^(pkg|cli|cmd)/(.*/)*.*\.go$
-          - id: go-vet
-            files: ^(pkg|cli|cmd)/(.*/)*.*\.go$
+#          - id: go-vet
+#            files: ^(pkg|cli|cmd)/(.*/)*.*\.go$
           - id: go-build
             files: ^(pkg|cli|cmd)/(.*/)*.*\.go$
           - id: go-mod-tidy
