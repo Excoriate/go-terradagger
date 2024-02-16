@@ -3,34 +3,33 @@ formatter: markdown table
 
 header-from: main.tf
 content: |-
-    # ☁️ Example module
+    # ☁️ Example Go-TerraDagger module
     ## Description
     {{ .Header }}
+    This module is only used for testing purposes.
 
-    Provide all the description that's required.
+    ---
 
-    * 🚀 **Functionality** - Describe what the module does.
+    ```hcl
+    {{ include "main.tf" }}
+    ```
 
-      ---
-      ```hcl
-      {{ include "./main.tf" }}
-      ```
 
-      ---
+    ---
 
-      ## Module's documentation
-      (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
-      {{ .Providers }}
+    ## Module's documentation
+    (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
+    {{ .Providers }}
 
-      {{ .Modules }}
+    {{ .Modules }}
 
-      {{ .Resources }}
+    {{ .Resources }}
 
-      {{ .Requirements }}
+    {{ .Requirements }}
 
-      {{ .Inputs }}
+    {{ .Inputs }}
 
-      {{ .Outputs }}
+    {{ .Outputs }}
 
 output:
     file: README.md
