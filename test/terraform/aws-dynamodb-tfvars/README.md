@@ -1,5 +1,6 @@
 <!-- BEGIN_TF_DOCS -->
 # ☁️ Example module
+
 ## Description
 
 
@@ -28,7 +29,9 @@ Provide all the description that's required.
     Terraform   = "true"
     Environment = "dev"
   }
+
 }
+
   ```
   ---
 

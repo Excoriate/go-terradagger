@@ -1,5 +1,6 @@
 <!-- BEGIN_TF_DOCS -->
 # ☁️ Example module
+
 ## Description
 
 
@@ -8,9 +9,11 @@ Provide all the description that's required.
 * 🚀 **Functionality** - Describe what the module does.
 
   ---
+
   ```hcl
   resource "random_id" "this" {
   byte_length = 8
+
 }
 
 resource "random_password" "this" {
@@ -25,6 +28,7 @@ resource "random_string" "this" {
 
 resource "random_uuid" "this" {
 }
+
   ```
 
   ---
