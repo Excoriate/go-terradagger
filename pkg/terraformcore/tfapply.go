@@ -11,8 +11,12 @@ import (
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
-func (i *IasC) Apply(td *terradagger.TD, tfOpts TfGlobalOptions, options ApplyArgs, _ []string) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Apply(td *terradagger.TD, tfOpts TfGlobalOptions, tfCmdArgs ApplyArgs, _ []string) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
+		return nil, nil, err
+	}
+
+	if err := tfCmdArgs.AreValid(); err != nil {
 		return nil, nil, err
 	}
 
@@ -23,8 +27,8 @@ func (i *IasC) Apply(td *terradagger.TD, tfOpts TfGlobalOptions, options ApplyAr
 	}
 
 	var args []string
-	if options != nil {
-		args = utils.MergeSlices(options.GetArgVars(), options.GetArgTerraformVarFiles(), options.GetArgRefreshOnly(), options.GetArgAutoApprove())
+	if tfCmdArgs != nil {
+		args = utils.MergeSlices(tfCmdArgs.GetArgVars(), tfCmdArgs.GetArgTerraformVarFiles(), tfCmdArgs.GetArgRefreshOnly(), tfCmdArgs.GetArgAutoApprove())
 	}
 
 	if i.Config.GetBinary() == config.IacToolTerraform {

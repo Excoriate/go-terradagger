@@ -65,6 +65,7 @@ var Cmd = &cobra.Command{
 					Name:  "is_enabled",
 					Value: "true",
 				}},
+			TerraformVarFiles: viper.GetStringSlice("var-files"),
 		})
 		if tfPlanErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
@@ -80,6 +81,7 @@ var Cmd = &cobra.Command{
 					Name:  "is_enabled",
 					Value: "true",
 				}},
+			TerraformVarFiles: viper.GetStringSlice("var-files"),
 		})
 		if tfApplyErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
@@ -95,6 +97,7 @@ var Cmd = &cobra.Command{
 					Name:  "is_enabled",
 					Value: "true",
 				}},
+			TerraformVarFiles: viper.GetStringSlice("var-files"),
 		})
 		if tfDestroyErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{

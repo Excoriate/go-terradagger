@@ -1,5 +1,12 @@
 package terraformcore
 
+import (
+	"path/filepath"
+
+	"github.com/Excoriate/go-terradagger/pkg/erroer"
+	"github.com/Excoriate/go-terradagger/pkg/utils"
+)
+
 type InitArgsOptions struct {
 	// NoColor is a flag to disable colors in terraform output
 	NoColor bool
@@ -7,12 +14,25 @@ type InitArgsOptions struct {
 	BackendConfigFile string
 	// Upgrade is a flag to upgrade the modules and plugins
 	Upgrade bool
+
+	// TfGlobalOptions is a struct that contains the global options for the terraform binary
+	// It implements the TfGlobalOptions interface
+	TfGlobalOptions TfGlobalOptions
 }
 
 type InitArgs interface {
 	GetArgNoColor() []string
 	GetArgBackendConfigFile() []string
 	GetArgUpgrade() []string
+
+	// InitArgsValidator is an interface for validating the init args,
+	// And also inherits from the TfArgs interface
+	InitArgsValidator
+}
+
+type InitArgsValidator interface {
+	BackendFileIsValid() error
+	TfArgs
 }
 
 func (ti *InitArgsOptions) GetArgNoColor() []string {
@@ -40,4 +60,28 @@ func (ti *InitArgsOptions) GetArgUpgrade() []string {
 	}
 
 	return []string{}
+}
+
+func (ti *InitArgsOptions) BackendFileIsValid() error {
+	beCfgFile := ti.BackendConfigFile
+
+	if beCfgFile == "" {
+		return nil
+	}
+
+	beCfgFilePath := filepath.Join(ti.TfGlobalOptions.GetModulePathFull(), beCfgFile)
+
+	if err := utils.IsValidFileE(beCfgFilePath); err != nil {
+		return erroer.NewErrTerraformCoreInvalidArgumentError("the backend file is not valid", err)
+	}
+
+	return nil
+}
+
+func (ti *InitArgsOptions) AreValid() error {
+	if err := ti.BackendFileIsValid(); err != nil {
+		return erroer.NewErrTerraformCoreInvalidArgumentError("the backend file is not valid", err)
+	}
+
+	return nil
 }

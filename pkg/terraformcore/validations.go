@@ -2,7 +2,6 @@ package terraformcore
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/Excoriate/go-terradagger/pkg/erroer"
 	"github.com/Excoriate/go-terradagger/pkg/utils"
@@ -19,8 +18,7 @@ func (o *tfOptions) IsModulePathValid() error {
 		return erroer.NewErrTerraDaggerInvalidArgumentError("the module path is empty", nil)
 	}
 
-	srcAbsolute := o.td.Config.GetWorkspace()
-	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
+	modulePathFull := o.GetModulePathFull()
 
 	if err := utils.IsValidDirE(modulePathFull); err != nil {
 		return erroer.NewErrTerraDaggerInvalidArgumentError(fmt.Sprintf("the module path %s is not valid", modulePathFull), err)
@@ -29,18 +27,16 @@ func (o *tfOptions) IsModulePathValid() error {
 	return nil
 }
 
-// ModulePathHasTerraformCode checks if the module path has terraform code
+// ModulePathHasTerraformCode checks if the module path has terraformed code
 // It checks for the existence of a file with the extension.tf or.hcl
 func (o *tfOptions) ModulePathHasTerraformCode() error {
-	srcAbsolute := o.td.Config.GetWorkspace()
-	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
+	modulePathFull := o.GetModulePathFull()
 
 	return utils.DirHasContentWithCertainExtension(modulePathFull, []string{".tf"})
 }
 
 func (o *tfOptions) ModulePathHasTerragruntHCL() error {
-	srcAbsolute := o.td.Config.GetWorkspace()
-	modulePathFull := filepath.Join(srcAbsolute, o.GetModulePath())
+	modulePathFull := o.GetModulePathFull()
 
 	return utils.DirHasContentWithCertainExtension(modulePathFull, []string{".hcl"})
 }

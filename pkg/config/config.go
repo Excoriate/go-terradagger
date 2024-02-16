@@ -14,6 +14,7 @@ const (
 	mountPrefix          = "/mnt"
 	terraDaggerExportDir = "export"
 	awsKeysPrefix        = "AWS_"
+	tfVarExtension       = ".tfvars"
 )
 
 var (
@@ -43,6 +44,7 @@ type Config interface {
 	GetAllowedTerraformFileExtensions() []string
 
 	GetEnvVarsByKeys(keys []string) map[string]string
+	GetTfVarsExtension() string
 }
 
 type Options struct {
@@ -142,4 +144,8 @@ func (o *Options) GetEnvVarsByKeys(keys []string) map[string]string {
 	}
 
 	return envVars
+}
+
+func (o *Options) GetTfVarsExtension() string {
+	return tfVarExtension
 }

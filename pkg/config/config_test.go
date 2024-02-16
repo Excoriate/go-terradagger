@@ -66,4 +66,9 @@ func TestOptions_GetAWSEnvVars(t *testing.T) {
 	}
 }
 
-// Additional tests should be implemented for other methods following similar patterns.
+func TestOptions_GetTfVarExtension(t *testing.T) {
+	opts := New("", nil, nil, nil)
+	if ext := opts.GetTfVarsExtension(); ext != tfVarExtension {
+		t.Errorf("Expected %s, got %s", tfVarExtension, ext)
+	}
+}

@@ -15,6 +15,7 @@ var (
 	workspace        string
 	module           string
 	terraformVersion string
+	varFiles         []string
 )
 var rootCmd = &cobra.Command{
 	Use:   "terradagger",
@@ -28,6 +29,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&workspace, "workspace", "w", "", "The workspace to run the Dagger engine in")
 	rootCmd.PersistentFlags().StringVarP(&module, "module", "m", "", "The module to run the Dagger engine in")
 	rootCmd.PersistentFlags().StringVarP(&terraformVersion, "tf-version", "v", "", "The version of Terraform to use")
+	rootCmd.PersistentFlags().StringSliceVarP(&varFiles, "var-files", "f", []string{}, "The terraform var files to use")
 
 	_ = viper.BindPFlags(rootCmd.PersistentFlags())
 

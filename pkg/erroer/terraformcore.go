@@ -16,3 +16,18 @@ func NewErrTerraformCoreInvalidConfigurationError(errMsg string, err error) *Err
 		},
 	}
 }
+
+type ErrTerraformCoreInvalidArgumentError struct {
+	BaseError
+}
+
+const ErrTerraformCoreInvalidArgumentErrorPrefix = "Invalid argument passed to Terraform Core APIs"
+
+func NewErrTerraformCoreInvalidArgumentError(errMsg string, err error) *ErrTerraformCoreInvalidArgumentError {
+	return &ErrTerraformCoreInvalidArgumentError{
+		BaseError: BaseError{
+			ErrWrapped: err,
+			ErrMsg:     fmt.Sprintf("%s: %s", ErrTerraformCoreInvalidArgumentErrorPrefix, errMsg),
+		},
+	}
+}

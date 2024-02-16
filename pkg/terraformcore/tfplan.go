@@ -7,12 +7,15 @@ import (
 	"github.com/Excoriate/go-terradagger/pkg/config"
 	"github.com/Excoriate/go-terradagger/pkg/container"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
-
 	"github.com/Excoriate/go-terradagger/pkg/utils"
 )
 
-func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs, _ []string) (*dagger.Container, container.Runtime, error) {
+func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, tfCmdArgs PlanArgs, _ []string) (*dagger.Container, container.Runtime, error) {
 	if err := tfOpts.IsModulePathValid(); err != nil {
+		return nil, nil, err
+	}
+
+	if err := tfCmdArgs.AreValid(); err != nil {
 		return nil, nil, err
 	}
 
@@ -23,8 +26,8 @@ func (i *IasC) Plan(td *terradagger.TD, tfOpts TfGlobalOptions, options PlanArgs
 	}
 
 	var args []string
-	if options != nil {
-		args = utils.MergeSlices(options.GetArgVars(), options.GetArgTerraformVarFiles(), options.GetArgRefreshOnly())
+	if tfCmdArgs != nil {
+		args = utils.MergeSlices(tfCmdArgs.GetArgVars(), tfCmdArgs.GetArgTerraformVarFiles(), tfCmdArgs.GetArgRefreshOnly())
 	}
 
 	if i.Config.GetBinary() == config.IacToolTerraform {

@@ -1,6 +1,8 @@
 package terraformcore
 
 import (
+	"path/filepath"
+
 	"github.com/Excoriate/go-terradagger/pkg/config"
 
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
@@ -35,6 +37,8 @@ type TfOptions struct {
 
 type TfGlobalOptions interface {
 	GetModulePath() string
+
+	GetModulePathFull() string
 	GetTerraformVersion() string
 	GetEnableSSHPrivateGit() bool
 	GetCustomContainerImage() string
@@ -57,6 +61,10 @@ func WithOptions(td *terradagger.TD, o *TfOptions) TfGlobalOptions {
 
 func (o *tfOptions) GetModulePath() string {
 	return o.options.ModulePath
+}
+
+func (o *tfOptions) GetModulePathFull() string {
+	return filepath.Join(o.td.Config.GetWorkspace(), o.GetModulePath())
 }
 
 func (o *tfOptions) GetTerraformVersion() string {
