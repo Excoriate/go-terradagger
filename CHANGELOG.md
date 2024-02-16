@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.3.0](https://github.com/Excoriate/go-terradagger/compare/v1.2.1...v1.3.0) (2024-02-16)
+
+
+### Features
+
+* add args validation through all core apis ([3214e0e](https://github.com/Excoriate/go-terradagger/commit/3214e0e27c80a856585bf42c63d6097c38f68095))
+
+
+### Refactoring
+
+* add more test in config and env packages ([55fde49](https://github.com/Excoriate/go-terradagger/commit/55fde49ff68666b4d35edc29b8137f54b8118a9d))
+* enhance the error logic ([e518b4b](https://github.com/Excoriate/go-terradagger/commit/e518b4b32cc9bc14ba153bc59964905cae083aba))
+* minor fixes, add validation for arguments, and tfvars ([9e1cbae](https://github.com/Excoriate/go-terradagger/commit/9e1cbaed92e3bbb136eb1e441a5c2e57f0b259c3))
+
+
+### Other
+
+* add CHANGELOG to ignored files for markdown linter ([081ad83](https://github.com/Excoriate/go-terradagger/commit/081ad83a3f5908d8dc2bd43a813e839526e38ffb))
+* add missing tflint configurfation file in new terraform module's example ([774c35d](https://github.com/Excoriate/go-terradagger/commit/774c35dfb168b68e64777bfff8ade3aea7b73a82))
+* fix terraform-docs configuration for example modules ([45ea705](https://github.com/Excoriate/go-terradagger/commit/45ea705002529cdf199eb5b66408bb0f697f5464))
+* generated missing docs ([5715782](https://github.com/Excoriate/go-terradagger/commit/5715782040cd393fd32d77586078a4135424bdde))
+* remove go-vet from hooks ([c83d2f3](https://github.com/Excoriate/go-terradagger/commit/c83d2f3ff55f8932a725988acf430bd60c7c9a5e))
+
 ## [1.2.1](https://github.com/Excoriate/go-terradagger/compare/v1.2.0...v1.2.1) (2024-02-11)
 
 
