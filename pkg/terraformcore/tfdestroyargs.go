@@ -27,9 +27,13 @@ type DestroyArgsOptions struct {
 
 type DestroyArgs interface {
 	GetArgRefreshOnly() []string
+	GetArgRefreshOnlyValue() bool
 	GetArgTerraformVarFiles() []string
+	GetArgTerraformVarFilesValue() []string
 	GetArgVars() []string
+	GetArgVarsValue() []TFInputVariable
 	GetArgAutoApprove() []string
+	GetArgAutoApproveValue() bool
 
 	// DestroyArgsValidator is an interface for validating the destroy args,
 	// And also inherits from the TfArgs interface
@@ -48,12 +52,20 @@ func (po *DestroyArgsOptions) GetArgRefreshOnly() []string {
 	return []string{}
 }
 
+func (po *DestroyArgsOptions) GetArgRefreshOnlyValue() bool {
+	return po.RefreshOnly
+}
+
 func (po *DestroyArgsOptions) GetArgTerraformVarFiles() []string {
 	var args []string
 	for _, file := range po.TerraformVarFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", file))
 	}
 	return args
+}
+
+func (po *DestroyArgsOptions) GetArgTerraformVarFilesValue() []string {
+	return po.TerraformVarFiles
 }
 
 func (po *DestroyArgsOptions) GetArgVars() []string {
@@ -64,6 +76,10 @@ func (po *DestroyArgsOptions) GetArgVars() []string {
 	return args
 }
 
+func (po *DestroyArgsOptions) GetArgVarsValue() []TFInputVariable {
+	return po.Vars
+}
+
 func (po *DestroyArgsOptions) GetArgAutoApprove() []string {
 	if po.AutoApprove {
 		return []string{"-auto-approve"}
@@ -71,8 +87,12 @@ func (po *DestroyArgsOptions) GetArgAutoApprove() []string {
 	return []string{}
 }
 
+func (po *DestroyArgsOptions) GetArgAutoApproveValue() bool {
+	return po.AutoApprove
+}
+
 func (po *DestroyArgsOptions) VarFilesAreValid() error {
-	varFiles := po.GetArgTerraformVarFiles()
+	varFiles := po.GetArgTerraformVarFilesValue()
 
 	for _, file := range varFiles {
 		tfVarFilePath := filepath.Join(po.TfGlobalOptions.GetModulePathFull(), file)

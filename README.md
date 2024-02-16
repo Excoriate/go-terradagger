@@ -98,7 +98,7 @@ if tfInitErr != nil {
 
 ```
 
->NOTE: The `E` suffix in the function name means that the specific [terraform](https://www.terraform.io/) command will return the `stdout` and an [error object](https://golang.org/pkg/errors/). The variant without the `E` suffix will return the actual [Dagger Container](https://pkg.go.dev/github.com/excoriate/dagger/pkg/container) object, and an [error object](https://golang.org/pkg/errors/).
+>NOTE: The `E` suffix in the function name means that the specific [terraform](https://www.terraform.io/) command will return the `stdout` and an [error object](https://golang.org/pkg/errors/). The variant without the `E` suffix will return the actual Dagger **Container** object, and an [error object](https://golang.org/pkg/errors/).
 
 
 To see a full working example, please check the [**terradagger-cli**](cli/) that's built in this repository

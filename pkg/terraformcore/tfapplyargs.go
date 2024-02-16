@@ -27,9 +27,13 @@ type ApplyArgsOptions struct {
 
 type ApplyArgs interface {
 	GetArgRefreshOnly() []string
+	GetArgRefreshOnlyValue() bool
 	GetArgTerraformVarFiles() []string
+	GetArgTerraformVarFilesValue() []string
 	GetArgVars() []string
+	GetArgVarsValue() []TFInputVariable
 	GetArgAutoApprove() []string
+	GetArgAutoApproveValue() bool
 
 	// ApplyArgsValidator is an interface for validating the apply args,
 	// And also inherits from the TfArgs interface
@@ -48,12 +52,20 @@ func (po *ApplyArgsOptions) GetArgRefreshOnly() []string {
 	return []string{}
 }
 
+func (po *ApplyArgsOptions) GetArgRefreshOnlyValue() bool {
+	return po.RefreshOnly
+}
+
 func (po *ApplyArgsOptions) GetArgTerraformVarFiles() []string {
 	var args []string
 	for _, file := range po.TerraformVarFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", file))
 	}
 	return args
+}
+
+func (po *ApplyArgsOptions) GetArgTerraformVarFilesValue() []string {
+	return po.TerraformVarFiles
 }
 
 func (po *ApplyArgsOptions) GetArgVars() []string {
@@ -64,6 +76,10 @@ func (po *ApplyArgsOptions) GetArgVars() []string {
 	return args
 }
 
+func (po *ApplyArgsOptions) GetArgVarsValue() []TFInputVariable {
+	return po.Vars
+}
+
 func (po *ApplyArgsOptions) GetArgAutoApprove() []string {
 	if po.AutoApprove {
 		return []string{"-auto-approve"}
@@ -71,8 +87,12 @@ func (po *ApplyArgsOptions) GetArgAutoApprove() []string {
 	return []string{}
 }
 
+func (po *ApplyArgsOptions) GetArgAutoApproveValue() bool {
+	return po.AutoApprove
+}
+
 func (po *ApplyArgsOptions) VarFilesAreValid() error {
-	varFiles := po.GetArgTerraformVarFiles()
+	varFiles := po.GetArgTerraformVarFilesValue()
 
 	for _, file := range varFiles {
 		tfVarFilePath := filepath.Join(po.TfGlobalOptions.GetModulePathFull(), file)

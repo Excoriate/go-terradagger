@@ -3,10 +3,9 @@ package tf
 import (
 	"context"
 
-	"github.com/Excoriate/go-terradagger/pkg/terraform"
-
 	"github.com/Excoriate/go-terradagger/cli/internal/tui"
 	"github.com/Excoriate/go-terradagger/pkg/terradagger"
+	"github.com/Excoriate/go-terradagger/pkg/terraform"
 	"github.com/Excoriate/go-terradagger/pkg/terraformcore"
 
 	"github.com/spf13/cobra"
@@ -69,7 +68,7 @@ var Cmd = &cobra.Command{
 		})
 		if tfPlanErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
+				Message: tfPlanErr.Error(),
 				Error:   tfPlanErr,
 			})
 		}
@@ -85,7 +84,7 @@ var Cmd = &cobra.Command{
 		})
 		if tfApplyErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
+				Message: tfApplyErr.Error(),
 				Error:   tfApplyErr,
 			})
 		}
@@ -101,7 +100,7 @@ var Cmd = &cobra.Command{
 		})
 		if tfDestroyErr != nil {
 			ux.Msg.ShowError(tui.MessageOptions{
-				Message: tfInitErr.Error(),
+				Message: tfDestroyErr.Error(),
 				Error:   tfDestroyErr,
 			})
 		}

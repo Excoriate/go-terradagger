@@ -28,6 +28,7 @@ func Apply(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options App
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
+		TfGlobalOptions:   tfOpts,
 	})
 }
 
@@ -39,5 +40,6 @@ func ApplyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Ap
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
+		TfGlobalOptions:   tfOpts,
 	})
 }

@@ -25,6 +25,7 @@ func Plan(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Plan
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
+		TfGlobalOptions:   tfOpts,
 	})
 }
 
@@ -35,5 +36,6 @@ func PlanE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Pla
 		RefreshOnly:       options.RefreshOnly,
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
+		TfGlobalOptions:   tfOpts,
 	})
 }

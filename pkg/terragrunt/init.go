@@ -24,6 +24,7 @@ func Init(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Init
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
+		TfGlobalOptions:   tfOpts,
 	})
 }
 
@@ -34,5 +35,6 @@ func InitE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options Ini
 		NoColor:           options.NoColor,
 		BackendConfigFile: options.BackendConfigFile,
 		Upgrade:           options.Upgrade,
+		TfGlobalOptions:   tfOpts,
 	})
 }

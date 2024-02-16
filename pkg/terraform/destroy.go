@@ -28,6 +28,7 @@ func Destroy(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options D
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
+		TfGlobalOptions:   tfOpts,
 	})
 }
 
@@ -39,5 +40,6 @@ func DestroyE(td *terradagger.TD, tfOpts terraformcore.TfGlobalOptions, options 
 		TerraformVarFiles: options.TerraformVarFiles,
 		Vars:              options.Vars,
 		AutoApprove:       options.AutoApprove,
+		TfGlobalOptions:   tfOpts,
 	})
 }

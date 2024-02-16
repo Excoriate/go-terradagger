@@ -7,7 +7,7 @@ vars:
     MODULE: '{{default "root-module-1" .MODULE}}'
     VARS: '{{default "" .VARS}}'
     BINARY: '{{default "cli" .BINARY}}'
-    TERRAFORM_TESTS_MODULES_DIR: '{{default "test-data/terraform" .TERRAFORM_TESTS_MODULES_DIR}}'
+    TERRAFORM_TESTS_MODULES_DIR: '{{default "test/terraform" .TERRAFORM_TESTS_MODULES_DIR}}'
 
 dotenv: ['.env.{{.ENV}}.aws', '.env.{{.ENV}}.terraform', '.env.{{.ENV}}.terragrunt']
 
@@ -131,3 +131,12 @@ tasks:
             - task: common:clean
             - task: tf:docs
               vars: {TF_WORKING_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}/{{.MODULE}}'}
+
+    tf-docs-all:
+        desc: Generate terraform docs for a set of modules and/or recipes
+        cmds:
+            - task: common:clean
+            - task: tf:doc-modules
+              vars: {TF_MODULES_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}'}
+            - task: tf:doc-recipes
+              vars: {TF_RECIPES_DIR: '{{.TERRAFORM_TESTS_MODULES_DIR}}'}

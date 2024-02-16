@@ -25,8 +25,11 @@ type PlanArgsOptions struct {
 
 type PlanArgs interface {
 	GetArgRefreshOnly() []string
+	GetArgRefreshOnlyValue() bool
 	GetArgTerraformVarFiles() []string
+	GetArgTerraformVarFilesValue() []string
 	GetArgVars() []string
+	GetArgVarsValue() []TFInputVariable
 
 	// PlanArgsValidator is an interface for validating the plan args,
 	// And also inherits from the TfArgs interface
@@ -45,12 +48,20 @@ func (po *PlanArgsOptions) GetArgRefreshOnly() []string {
 	return []string{}
 }
 
+func (po *PlanArgsOptions) GetArgRefreshOnlyValue() bool {
+	return po.RefreshOnly
+}
+
 func (po *PlanArgsOptions) GetArgTerraformVarFiles() []string {
 	var args []string
 	for _, file := range po.TerraformVarFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", file))
 	}
 	return args
+}
+
+func (po *PlanArgsOptions) GetArgTerraformVarFilesValue() []string {
+	return po.TerraformVarFiles
 }
 
 func (po *PlanArgsOptions) GetArgVars() []string {
@@ -61,8 +72,12 @@ func (po *PlanArgsOptions) GetArgVars() []string {
 	return args
 }
 
+func (po *PlanArgsOptions) GetArgVarsValue() []TFInputVariable {
+	return po.Vars
+}
+
 func (po *PlanArgsOptions) VarFilesAreValid() error {
-	varFiles := po.GetArgTerraformVarFiles()
+	varFiles := po.GetArgTerraformVarFilesValue()
 
 	for _, file := range varFiles {
 		tfVarFilePath := filepath.Join(po.TfGlobalOptions.GetModulePathFull(), file)

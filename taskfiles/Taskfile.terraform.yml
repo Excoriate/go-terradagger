@@ -68,6 +68,29 @@ tasks:
                 terraform init
               fi
         silent: true
+    upgrade-modules:
+        desc: Init and upgrade Terraform modules
+        vars:
+            TF_MODULES_DIR: '{{.TF_MODULES_DIR}}'
+        cmds:
+            - |
+              echo "Inspecting modules directory: {{.TF_MODULES_DIR}}"
+              echo "Full path: $(pwd)/{{.TF_MODULES_DIR}}"
+              echo "Searching for Terraform modules..."
+            - ./scripts/terraform/tf-helper.sh --modules_dir={{.TF_MODULES_DIR}} --max_depth_flag=2
+        silent: true
+    upgrade-recipes:
+        desc: Init and upgrade Terraform recipes in the examples directory
+        vars:
+            TF_RECIPES_DIR: '{{.TF_RECIPES_DIR}}'
+        cmds:
+            - |
+              echo "Inspecting modules directory: {{.TF_RECIPES_DIR}}"
+              echo "Full path: $(pwd)/{{.TF_RECIPES_DIR}}"
+              echo "Searching for Terraform recipes..."
+            - ./scripts/terraform/tf-helper.sh --modules_dir={{.TF_RECIPES_DIR}} --max_depth_flag=2
+        silent: true
+
     plan:
         desc: Run Terraform plan
         deps:
@@ -247,9 +270,9 @@ tasks:
               fi
 
               tflint -v
-
               tflint --init
               tflint
+
         silent: true
     docs:
         desc: Generate Terraform docs
@@ -279,4 +302,28 @@ tasks:
 
               cat .terraform-docs.yml
               terraform-docs -c .terraform-docs.yml md . > README.md
+        silent: true
+
+    doc-modules:
+        desc: Generate Terraform docs for modules
+        vars:
+            TF_MODULES_DIR: '{{.TF_MODULES_DIR}}'
+        cmds:
+            - |
+              echo "Inspecting modules directory: {{.TF_MODULES_DIR}}"
+              echo "Full path: $(pwd)/{{.TF_MODULES_DIR}}"
+              echo "Searching for Terraform modules for generating docs..."
+            - ./scripts/terraform/tf-helper.sh --modules_dir={{.TF_MODULES_DIR}} --max_depth_flag=2 --action=docs
+        silent: true
+
+    doc-recipes:
+        desc: Generate Terraform docs for recipes and/or examples
+        vars:
+            TF_RECIPES_DIR: '{{.TF_RECIPES_DIR}}'
+        cmds:
+            - |
+              echo "Inspecting modules directory: {{.TF_RECIPES_DIR}}"
+              echo "Full path: $(pwd)/{{.TF_RECIPES_DIR}}"
+              echo "Searching for Terraform modules for generating docs..."
+            - ./scripts/terraform/tf-helper.sh --modules_dir={{.TF_RECIPES_DIR}} --max_depth_flag=2 --action=docs
         silent: true

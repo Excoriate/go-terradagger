@@ -1,6 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
 # ☁️ Example module
-
 ## Description
 
 
@@ -8,10 +7,9 @@ Provide all the description that's required.
 
 * 🚀 **Functionality** - Describe what the module does.
 
----
-
-```hcl
-resource "random_id" "this" {
+  ---
+  ```hcl
+  resource "random_id" "this" {
   byte_length = 8
 }
 
@@ -27,25 +25,23 @@ resource "random_string" "this" {
 
 resource "random_uuid" "this" {
 }
-```
+  ```
 
----
+  ---
 
-## Module's documentation
-
-(This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
-
-## Providers
+  ## Module's documentation
+  (This documentation is auto-generated using [terraform-docs](https://terraform-docs.io))
+  ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_random"></a> [random](#provider\_random) | 3.5.1 |
 
-## Modules
+  ## Modules
 
 No modules.
 
-## Resources
+  ## Resources
 
 | Name | Type |
 |------|------|
@@ -54,27 +50,25 @@ No modules.
 | [random_string.this](https://registry.terraform.io/providers/hashicorp/random/3.5.1/docs/resources/string) | resource |
 | [random_uuid.this](https://registry.terraform.io/providers/hashicorp/random/3.5.1/docs/resources/uuid) | resource |
 
-## Requirements
+  ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.5.1 |
 
-## Inputs
+  ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region to deploy the resources | `string` | n/a | yes |
 | <a name="input_is_enabled"></a> [is\_enabled](#input\_is\_enabled) | Whether this module will be created or not. It is useful, for stack-composite<br>modules that conditionally includes resources provided by this module.. | `bool` | n/a | yes |
 | <a name="input_module_config"></a> [module\_config](#input\_module\_config) | Try to put a meaningful description here. Hopefully, referencing the<br>documentation of the module that is being instantiated. | <pre>list(object({<br>    name = string<br>  }))</pre> | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to add to all resources. | `map(string)` | `{}` | no |
 
-## Outputs
+  ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_aws_region_for_deploy_this"></a> [aws\_region\_for\_deploy\_this](#output\_aws\_region\_for\_deploy\_this) | The AWS region where the module is deployed. |
 | <a name="output_is_enabled"></a> [is\_enabled](#output\_is\_enabled) | Whether the module is enabled or not. |
 | <a name="output_random_id"></a> [random\_id](#output\_random\_id) | The random id generated. |
 | <a name="output_random_password"></a> [random\_password](#output\_random\_password) | The random pet generated. |

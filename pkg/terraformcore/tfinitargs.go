@@ -22,8 +22,11 @@ type InitArgsOptions struct {
 
 type InitArgs interface {
 	GetArgNoColor() []string
+	GetArgNoColourValue() bool
 	GetArgBackendConfigFile() []string
+	GetArgBackendConfigFileValue() string
 	GetArgUpgrade() []string
+	GetArgUpgradeValue() bool
 
 	// InitArgsValidator is an interface for validating the init args,
 	// And also inherits from the TfArgs interface
@@ -44,6 +47,10 @@ func (ti *InitArgsOptions) GetArgNoColor() []string {
 	return []string{}
 }
 
+func (ti *InitArgsOptions) GetArgNoColourValue() bool {
+	return ti.NoColor
+}
+
 func (ti *InitArgsOptions) GetArgBackendConfigFile() []string {
 	arg := []string{"-backend-config", ti.BackendConfigFile}
 	if ti.BackendConfigFile != "" {
@@ -51,6 +58,10 @@ func (ti *InitArgsOptions) GetArgBackendConfigFile() []string {
 	}
 
 	return []string{}
+}
+
+func (ti *InitArgsOptions) GetArgBackendConfigFileValue() string {
+	return ti.BackendConfigFile
 }
 
 func (ti *InitArgsOptions) GetArgUpgrade() []string {
@@ -62,8 +73,12 @@ func (ti *InitArgsOptions) GetArgUpgrade() []string {
 	return []string{}
 }
 
+func (ti *InitArgsOptions) GetArgUpgradeValue() bool {
+	return ti.Upgrade
+}
+
 func (ti *InitArgsOptions) BackendFileIsValid() error {
-	beCfgFile := ti.BackendConfigFile
+	beCfgFile := ti.GetArgBackendConfigFileValue()
 
 	if beCfgFile == "" {
 		return nil
