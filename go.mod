@@ -4,7 +4,7 @@ go 1.21.5
 
 require (
 	dagger.io/dagger v0.9.8
-	github.com/docker/docker v25.0.2+incompatible
+	github.com/docker/docker v25.0.5+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/mock v0.4.0
